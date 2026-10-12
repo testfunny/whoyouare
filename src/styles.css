@@ -577,3 +577,23 @@ p { line-height: 1.75; }
 .entry.hid .tagline { background: #5b8def; color: #fff; }
 .entry.hid .badge { color: #8fb7ff; border: 1px solid rgba(143,183,255,.4); background: rgba(143,183,255,.08); }
 .entry.cf .go, .entry.zh .go, .entry.hid .go { color: var(--accent); }
+
+/* ---------- 高级感 · 印刷质感层（纯样式，不动文案结构） ---------- */
+html, body {
+  background: linear-gradient(180deg, #131318 0%, #0d0d11 100%) fixed;
+}
+/* 全站胶片颗粒：一层极淡的印刷噪点，压掉纯色的"塑料感" */
+body::after {
+  content: ''; position: fixed; inset: 0; z-index: 2000; pointer-events: none; opacity: .05;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+/* 标题衬线化：标题像铅印，正文保持无衬线，编辑部气质 */
+h1, .result-hero h1, .entry h2, .ending-card h3, .feng {
+  font-family: "Noto Serif SC", "Source Han Serif SC", "STSong", "SimSun", serif;
+  letter-spacing: .5px;
+}
+/* 卡片悬浮感：极软的环境影，代替纯描边的"线框感" */
+.section, .q-card, .entry, .cp-card {
+  box-shadow: 0 14px 34px rgba(0,0,0,.22);
+}
+body { letter-spacing: .015em; }
