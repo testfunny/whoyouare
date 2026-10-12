@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { CF_IDENTITIES, cfScore, cfMoney, cfFactor, CF_TIERS, cfHiddenEnding, CF_BEST_WHY, CF_TRAP_DEEP, cfProfile, CF_PLAYBOOKS, cfLetter } from '../data/cf'
+import { PRICES } from '../data/prices'
 import { isUnlocked } from '../lib/codes'
 import { dec, nav, copyText, fullUrl } from '../lib/share'
 import { renderCFPoster, CfTlItem } from '../lib/poster'
@@ -85,6 +86,12 @@ export default function ResultCf({ params }: { params: URLSearchParams }) {
     }))
     return { pts, dots, W, H, baseY: y(lv[0]).toFixed(1), endY: y(lv[n]).toFixed(1) }
   })()
+  /* 完整版字数（真实统计） */
+  const cfWords = r.items.reduce((s, { q }) => s + (CF_BEST_WHY[q.id]?.length || 0), 0)
+    + r.items.reduce((s, { q }) => s + (q.opts.some(o => o.trap) && CF_TRAP_DEEP[q.id] ? CF_TRAP_DEEP[q.id].length : 0), 0)
+    + CF_PLAYBOOKS[identity.id].steps.join('').length
+    + cfLetter(identity, r.index, r.traps, r.gods, r.finalMoney).join('').length
+    + (prof.body + prof.agree).length
 
   const items: CfTlItem[] = r.items.map(({ q, opt }) => ({
     year: q.year,
@@ -254,8 +261,9 @@ export default function ResultCf({ params }: { params: URLSearchParams }) {
               <p style={{ fontSize: 12.5, color: 'var(--sub)' }}>
                 模块一 · 暴富人格侧写　模块二 · 平行暴富时间表<br />
                 模块三 · 完整错过清单　模块四 · 陷阱逐题解析<br />
-                模块五 · 同开局通关秘籍
+                模块五 · 同开局通关秘籍　尾声 · 平行世界的信
               </p>
+              <p style={{ marginTop: 8, fontSize: 12.5, color: '#ffd166', fontWeight: 700 }}>本份报告约 {cfWords} 字 · 按你的 25 年剧本单独生成</p>
             </div>
           </Reveal>
           <Reveal>
@@ -351,6 +359,7 @@ export default function ResultCf({ params }: { params: URLSearchParams }) {
               <div className="lock-overlay">
                 <div className="l-title">🔒 暴富人格侧写 + 时间表 + 解析 + 秘籍</div>
                 <div className="l-sub">小红书店铺购买「暴富完整版兑换码」后输入即可<br />一次解锁，长期有效</div>
+                <div className="l-price">完整版 ¥{PRICES.cf} · {cfWords} 字 · 5模块+1封信</div>
                 <button
                   className="btn primary small"
                   onClick={() => {

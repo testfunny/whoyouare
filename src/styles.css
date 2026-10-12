@@ -503,3 +503,62 @@ p { line-height: 1.75; }
 .prophecy h3 { font-size: 20px; font-weight: 900; margin: 6px 0 8px; }
 
 .hero-emoji { font-size: 25px; letter-spacing: 8px; margin-top: 8px; opacity: .95; }
+
+/* ---------- 三世界主题 · 甄嬛传（宫墙红 / 墨 / 金） ---------- */
+.theme-zh { background: radial-gradient(1100px 480px at 50% -8%, #3a1616 0%, #141414 62%) fixed; }
+.theme-zh .q-card, .theme-zh .section { background: linear-gradient(160deg, rgba(58,22,22,.4), rgba(26,16,16,.94)); border-color: rgba(122,64,48,.6); }
+.theme-zh .opt { background: linear-gradient(160deg, rgba(122,46,46,.22), rgba(26,16,16,.55)); border-color: #6b3a2a; }
+.theme-zh .opt.sel { border-color: var(--accent); background: rgba(245,197,66,.1); }
+.theme-zh .q-sub, .theme-zh .s-title { color: #e8b06a; }
+.theme-zh h1, .theme-zh .q-text, .theme-zh .feng { font-family: "Noto Serif SC", "STSong", serif; }
+.theme-zh .progress-label span:first-child { color: #e8b06a; }
+
+/* ---------- 三世界主题 · 穿越（复古账本 / 褐金 / 票据） ---------- */
+.theme-cf { background: radial-gradient(1100px 480px at 50% -8%, #2a1f0e 0%, #141210 62%) fixed; }
+.theme-cf .q-card, .theme-cf .section { background: linear-gradient(160deg, rgba(42,31,14,.5), rgba(22,18,10,.95)); border-color: #5a4a1c; }
+.theme-cf .opt { background: linear-gradient(160deg, rgba(90,74,28,.18), rgba(22,18,10,.5)); border-color: #6b5426; border-style: dashed; }
+.theme-cf .opt.sel { border-color: var(--accent); border-style: solid; background: rgba(245,197,66,.1); }
+.theme-cf .q-sub, .theme-cf .s-title { color: #d9b96a; }
+
+/* ---------- 三世界主题 · 隐藏人格（深夜档案室 / 蓝紫 / 解密） ---------- */
+.theme-hid { background: radial-gradient(1000px 460px at 50% -8%, #101c33 0%, #0e0e14 64%) fixed; }
+.theme-hid .q-card, .theme-hid .section { background: linear-gradient(160deg, rgba(20,30,52,.55), rgba(13,16,28,.95)); border-color: #24334f; }
+.theme-hid .opt { background: linear-gradient(160deg, rgba(28,44,80,.28), rgba(13,16,28,.5)); border-color: #2c3f66; }
+.theme-hid .opt.sel { border-color: #7ea8ff; background: rgba(90,140,255,.12); }
+.theme-hid .q-sub, .theme-hid .s-title { color: #8fb7ff; }
+.theme-hid .hero-emoji { filter: hue-rotate(180deg); }
+
+/* ---------- 金钱进账反馈 ---------- */
+.money-pill {
+  margin-top: 10px; display: inline-flex; align-items: center; gap: 6px;
+  background: rgba(245,197,66,.1); border: 1px solid rgba(245,197,66,.4);
+  color: #ffd166; border-radius: 999px; padding: 6px 14px;
+  font-weight: 800; font-size: 13px; font-variant-numeric: tabular-nums;
+}
+.money-pill.shake { animation: mshake .45s ease; }
+@keyframes mshake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-4px); } 50% { transform: translateX(4px); } 75% { transform: translateX(-3px); } }
+.delta-chip {
+  position: fixed; left: 50%; top: 36%; transform: translateX(-50%); z-index: 40;
+  font-weight: 900; font-size: 19px; pointer-events: none;
+  animation: floatup 1.1s ease both; font-variant-numeric: tabular-nums;
+  text-shadow: 0 2px 12px rgba(0,0,0,.6);
+}
+.delta-chip.up { color: #7dd087; }
+.delta-chip.down { color: #ff8a8d; }
+@keyframes floatup {
+  0% { opacity: 0; transform: translate(-50%, 16px); }
+  18% { opacity: 1; }
+  100% { opacity: 0; transform: translate(-50%, -36px); }
+}
+
+/* ---------- 锁定卡价格锚点 ---------- */
+.l-price { margin-top: 8px; color: #ffd166; font-weight: 900; font-size: 13.5px; letter-spacing: .5px; }
+
+/* ---------- 首页三卡 · 世界配色 ---------- */
+.entry.zh { background: linear-gradient(160deg, #2a1612 0%, #170f0d 100%); border-color: #6b3a2a; }
+.entry.zh .tagline { background: #c96f4a; color: #fff; }
+.entry.zh .badge { color: #e8b06a; border: 1px solid rgba(232,176,106,.4); background: rgba(232,176,106,.08); }
+.entry.hid { background: linear-gradient(160deg, #101a2e 0%, #0d1020 100%); border-color: #2c3f66; }
+.entry.hid .tagline { background: #5b8def; color: #fff; }
+.entry.hid .badge { color: #8fb7ff; border: 1px solid rgba(143,183,255,.4); background: rgba(143,183,255,.08); }
+.entry.cf .go, .entry.zh .go, .entry.hid .go { color: var(--accent); }

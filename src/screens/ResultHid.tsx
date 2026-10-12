@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { HID_QS, HID_CP, HID_VIBES } from '../data/hid'
+import { PRICES } from '../data/prices'
 import { scoreHID } from '../lib/scoring'
 import { renderHIDPoster } from '../lib/poster'
 import { isUnlocked, setUnlocked } from '../lib/codes'
@@ -52,6 +53,8 @@ export default function ResultHid({ params }: { params: URLSearchParams }) {
   })()
   const vibe = gi != null ? HID_VIBES[gi] : null
   const prophecyHit = vibe ? vibe.ids.includes(L.id) : false
+  /* 完整版字数（真实统计） */
+  const reportWords = [L.hidden, L.deep, L.rel[0], L.rel[1], L.rel[2], L.sw, L.tip, L.dark, L.mbti, L.mirror[0], L.mirror[1], L.mirror[2], L.grow[0], L.grow[1], L.grow[2]].join('').length
 
   const cp = dec<{ t: string; f: string }>(params.get('c'))
   const rel = cp?.f ? (HID_CP[`${cp.f}|${L.family}`] || HID_CP[`${L.family}|${cp.f}`]) : null
@@ -168,6 +171,7 @@ export default function ResultHid({ params }: { params: URLSearchParams }) {
                 模块四 · 开关与说明　模块五 · 阴影面预警<br />
                 附录 · MBTI隐藏配置 / 你一定说过的话 / 本周练习
               </p>
+              <p style={{ marginTop: 8, fontSize: 12.5, color: '#ffd166', fontWeight: 700 }}>本份报告约 {reportWords} 字 · 按你的答案单独生成</p>
             </div>
           </Reveal>
           <Reveal>
@@ -242,6 +246,7 @@ export default function ResultHid({ params }: { params: URLSearchParams }) {
               <div className="lock-overlay">
                 <div className="l-title">🔒 五模块完整报告 + 三附录 + 专属海报</div>
                 <div className="l-sub">小红书店铺购买「完整版兑换码」后输入即可<br />一次解锁，长期有效</div>
+                <div className="l-price">完整版 ¥{PRICES.hid} · {reportWords} 字 · 5模块+3附录</div>
                 <button className="btn primary small" onClick={goUnlock}>输入兑换码解锁完整版</button>
               </div>
             </div>

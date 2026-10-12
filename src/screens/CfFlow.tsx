@@ -1,5 +1,5 @@
-import { useRef, useState } from 'react'
-import { CF_IDENTITIES, CF_QS } from '../data/cf'
+import { useEffect, useRef, useState } from 'react'
+import { CF_IDENTITIES, CF_QS, cfMoney } from '../data/cf'
 import { enc, nav } from '../lib/share'
 import { ProgressCells } from '../components/ui'
 import GenLoading from '../components/GenLoading'
@@ -79,16 +79,50 @@ export default function CfFlow() {
   const [busy, setBusy] = useState(false)
   const [showGen, setShowGen] = useState(false)
   const [flash, setFlash] = useState('')
+  const [stashVal, setStashVal] = useState(0)
+  const [money, setMoney] = useState(0)
+  const [deltaChip, setDeltaChip] = useState<{ v: number; trap: boolean } | null>(null)
+  const [shake, setShake] = useState(false)
   const finalRef = useRef<number[]>([])
+  const dispRef = useRef(0)
+  const chipTimer = useRef<number | undefined>(undefined)
+
+  /* 身家数字滚动动画 */
+  useEffect(() => {
+    if (!stashVal) return
+    const from = dispRef.current || 0
+    const t0 = performance.now()
+    let raf = 0
+    const step = (t: number) => {
+      const p = Math.min(1, (t - t0) / 480)
+      const v = Math.round(from + (stashVal - from) * p * (2 - p))
+      dispRef.current = v
+      setMoney(v)
+      if (p < 1) raf = requestAnimationFrame(step)
+    }
+    raf = requestAnimationFrame(step)
+    return () => cancelAnimationFrame(raf)
+  }, [stashVal])
 
   const identity = idIdx != null ? CF_IDENTITIES[idIdx] : null
   const qs = identity ? identity.seq.map(id => CF_QS[id]).filter(Boolean) : []
 
   if (!identity) {
-    return <Draw onPick={i => { try { sessionStorage.setItem('wy_cf_id', String(i)) } catch { /* ignore */ } setIdIdx(i) }} />
+    return <Draw onPick={i => { try { sessionStorage.setItem('wy_cf_id', String(i)) } catch { /* ignore */ } setIdIdx(i); setStashVal(CF_IDENTITIES[i].stash) }} />
   }
 
   const q = qs[idx]
+
+  const calcStash = (list: number[]) => {
+    let v = identity.stash
+    list.forEach((oi, qi) => {
+      const qq = qs[qi]
+      if (!qq) return
+      const mx = Math.max(...qq.opts.map(o => o.pts))
+      v = Math.max(100, Math.round(v * (0.85 + (qq.opts[oi].pts / mx) * 0.9)))
+    })
+    return v
+  }
 
   const pick = (oi: number) => {
     if (busy || sel !== null) return
@@ -96,16 +130,25 @@ export default function CfFlow() {
     buzz(8)
     setBusy(true)
     setFlash(q.opts[oi].tl)
+    const nextList = [...answers, oi]
+    const nextStash = calcStash(nextList)
+    setStashVal(nextStash)
+    setDeltaChip({ v: nextStash - stashVal, trap: !!q.opts[oi].trap })
+    if (q.opts[oi].trap) {
+      setShake(true)
+      setTimeout(() => setShake(false), 480)
+    }
+    if (chipTimer.current) clearTimeout(chipTimer.current)
+    chipTimer.current = window.setTimeout(() => setDeltaChip(null), 1150)
     setTimeout(() => {
-      const next = [...answers, oi]
       setSel(null)
       setBusy(false)
       setFlash('')
-      if (next.length < qs.length) {
-        setAnswers(next)
+      if (nextList.length < qs.length) {
+        setAnswers(nextList)
         setIdx(i => i + 1)
       } else {
-        finalRef.current = next
+        finalRef.current = nextList
         setShowGen(true)
       }
     }, 900)
@@ -113,8 +156,10 @@ export default function CfFlow() {
 
   const back = () => {
     if (idx > 0 && !busy) {
-      setAnswers(a => a.slice(0, -1))
+      const rest = answers.slice(0, -1)
+      setAnswers(rest)
       setIdx(i => i - 1)
+      setStashVal(calcStash(rest))
     }
   }
 
@@ -131,7 +176,16 @@ export default function CfFlow() {
           <span>{idx + 1} / {qs.length}</span>
         </div>
         <ProgressCells total={qs.length} done={idx} zh={false} />
+        <div style={{ textAlign: 'center' }}>
+          <span className={`money-pill${shake ? ' shake' : ''}`}>💰 当前身家 · {cfMoney(money)}</span>
+        </div>
       </div>
+
+      {deltaChip && (
+        <div className={`delta-chip ${deltaChip.v >= 0 ? 'up' : 'down'}`}>
+          {deltaChip.v >= 0 ? '+' : '−'}{cfMoney(Math.abs(deltaChip.v))}{deltaChip.trap ? ' · 踩坑了' : ''}
+        </div>
+      )}
 
       <div className="q-card slide-in" key={`q${idx}`}>
         <div className="q-sub ticket">⏪ 穿越至 {q.year} 年</div>

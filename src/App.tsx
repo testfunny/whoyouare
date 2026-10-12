@@ -32,8 +32,17 @@ export default function App() {
   else if (path === '/unlock') body = <Unlock key={params.get('p') || 'hid'} params={params} />
   else body = <Home params={params} />
 
+  const theme =
+    path === '/quiz/zh' || path === '/result/zh'
+      ? 'zh'
+      : path === '/quiz/cf' || path === '/result/cf'
+        ? 'cf'
+        : path === '/quiz/hid' || path === '/result/hid'
+          ? 'hid'
+          : ''
+
   return (
-    <div className="shell">
+    <div className={`shell${theme ? ` theme-${theme}` : ''}`}>
       {body}
       <Analytics />
     </div>
