@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { CF_IDENTITIES, CF_QS, cfMoney } from '../data/cf'
+import { CF_IDENTITIES, CF_QS, cfMoney, cfWorthLine, butlerSay } from '../data/cf'
 import { enc, nav } from '../lib/share'
 import { ProgressCells } from '../components/ui'
 import GenLoading from '../components/GenLoading'
@@ -81,11 +81,10 @@ export default function CfFlow() {
   const [flash, setFlash] = useState('')
   const [stashVal, setStashVal] = useState(0)
   const [money, setMoney] = useState(0)
-  const [deltaChip, setDeltaChip] = useState<{ v: number; trap: boolean } | null>(null)
+  const [butler, setButler] = useState('')
   const [shake, setShake] = useState(false)
   const finalRef = useRef<number[]>([])
   const dispRef = useRef(0)
-  const chipTimer = useRef<number | undefined>(undefined)
 
   /* 身家数字滚动动画 */
   useEffect(() => {
@@ -119,7 +118,7 @@ export default function CfFlow() {
       const qq = qs[qi]
       if (!qq) return
       const mx = Math.max(...qq.opts.map(o => o.pts))
-      v = Math.max(100, Math.round(v * (0.85 + (qq.opts[oi].pts / mx) * 0.9)))
+      v = Math.max(100, Math.round(v * (0.4 + (qq.opts[oi].pts / mx) * 1.45)))
     })
     return v
   }
@@ -133,13 +132,12 @@ export default function CfFlow() {
     const nextList = [...answers, oi]
     const nextStash = calcStash(nextList)
     setStashVal(nextStash)
-    setDeltaChip({ v: nextStash - stashVal, trap: !!q.opts[oi].trap })
+    const mx = Math.max(...q.opts.map(o => o.pts))
+    setButler(butlerSay(!!q.opts[oi].trap, !!q.opts[oi].god, q.opts[oi].pts / mx))
     if (q.opts[oi].trap) {
       setShake(true)
       setTimeout(() => setShake(false), 480)
     }
-    if (chipTimer.current) clearTimeout(chipTimer.current)
-    chipTimer.current = window.setTimeout(() => setDeltaChip(null), 1150)
     setTimeout(() => {
       setSel(null)
       setBusy(false)
@@ -177,15 +175,14 @@ export default function CfFlow() {
         </div>
         <ProgressCells total={qs.length} done={idx} zh={false} />
         <div style={{ textAlign: 'center' }}>
-          <span className={`money-pill${shake ? ' shake' : ''}`}>💰 当前身家 · {cfMoney(money)}</span>
+          <div className={`ledger-strip${shake ? ' shake' : ''}`}>
+            <span className="ls-label">身家账本</span>
+            <span className="ls-amount">{cfMoney(money)}</span>
+            <span className="ls-caption">{cfWorthLine(money, identity.id)}</span>
+          </div>
+          {butler && <div className="butler-note">{butler}</div>}
         </div>
       </div>
-
-      {deltaChip && (
-        <div className={`delta-chip ${deltaChip.v >= 0 ? 'up' : 'down'}`}>
-          {deltaChip.v >= 0 ? '+' : '−'}{cfMoney(Math.abs(deltaChip.v))}{deltaChip.trap ? ' · 踩坑了' : ''}
-        </div>
-      )}
 
       <div className="q-card slide-in" key={`q${idx}`}>
         <div className="q-sub ticket">⏪ 穿越至 {q.year} 年</div>

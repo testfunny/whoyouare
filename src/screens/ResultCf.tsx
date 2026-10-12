@@ -65,7 +65,7 @@ export default function ResultCf({ params }: { params: URLSearchParams }) {
     const raw = [1]
     r.items.forEach(({ q, opt }) => {
       const mx = Math.max(...q.opts.map(o => o.pts))
-      raw.push(raw[raw.length - 1] * (0.85 + (opt.pts / mx) * 0.9))
+      raw.push(raw[raw.length - 1] * (0.4 + (opt.pts / mx) * 1.45))
     })
     const k = (r.finalMoney / identity.stash) / (raw[n] || 1)
     const vals = raw.map(v => v * k)

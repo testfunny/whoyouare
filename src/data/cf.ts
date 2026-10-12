@@ -625,8 +625,34 @@ export const CF_PLAYBOOKS: Record<string, { title: string; steps: [string, strin
   ] }
 }
 
-/** 尾声 · 来自平行世界的信（完整版收尾，动态生成） */
-export function cfLetter(identity: CfIdentity, index: number, traps: number, gods: number, finalMoney: number): string[] {
+/* ============ 账本先生 · 年代物价换算 ============ */
+
+const CF_WORTH: Record<string, { cap: (v: number) => string; poorAt: number; poor: string }> = {
+  a: { poorAt: 1200, poor: '1998年：这数字摆在年夜饭的桌上，连春晚都不敢这么演', cap: v => v >= 20000 ? `1998年 ≈ ${(v / 2500).toFixed(1)} 平米北京二环外的房子` : `1998年 ≈ ${Math.round(v / 500)} 个月工资` },
+  b: { poorAt: 900, poor: '2005年：网吧月卡都办不起三张，属于赤贫型青春', cap: v => v >= 12000 ? `2005年 ≈ ${(v / 6000).toFixed(1)} 平米北京五环的房子` : `2005年 ≈ ${Math.round(v / 800)} 个月生活费` },
+  c: { poorAt: 3000, poor: '2012年：连一台顶配小米都拿不下，雷军看了都摇头', cap: v => v >= 60000 ? `2012年 ≈ ${(v / 20000).toFixed(1)} 平米北京四环的首付零头` : `2012年 ≈ ${Math.round(v / 9000)} 个月工资` },
+  d: { poorAt: 2000, poor: '2017年：够点40杯喜茶，然后继续穷得很精致', cap: v => v >= 80000 ? `2017年 ≈ ${(v / 55000).toFixed(2)} 平米北京的房子` : `2017年 ≈ ${Math.round(v / 5000)} 个月工资` },
+  e: { poorAt: 90000, poor: '2015年：家底薄成这样，伙计们该散伙了', cap: v => v >= 300000 ? `2015年 ≈ ${(v / 30000).toFixed(1)} 平米临街铺面` : `2015年 ≈ ${Math.round(v / 3500)} 个月的员工工资` }
+}
+
+/** 把身家翻译成「当年的生活」 */
+export function cfWorthLine(v: number, id: string): string {
+  const c = CF_WORTH[id]
+  if (!c) return ''
+  if (v < c.poorAt) return c.poor
+  return c.cap(v)
+}
+
+/** 账本先生的一句毒评（每题选完换一句） */
+export function butlerSay(trap: boolean, god: boolean, ratio: number): string {
+  if (trap) return '账本先生扶了扶眼镜：这一笔，他其实提前三年就记下了。'
+  if (god) return '账本先生罕见地抬了抬头：这一笔，记你一功。'
+  if (ratio >= 0.75) return '入账。他面无表情地翻页——翻页，就是他最大的赞美。'
+  if (ratio >= 0.5) return '记下了。他不评价，但他什么都记得。'
+  return '又薄了一行。他说，这也算一种体验型消费。'
+}
+
+/** 尾声 · 来自平行世界的信（完整版收尾，动态生成） */export function cfLetter(identity: CfIdentity, index: number, traps: number, gods: number, finalMoney: number): string[] {
   const tierWord = index >= 65
     ? '这趟你走得又稳又远，有好几步我都要起立鼓掌。'
     : index >= 45

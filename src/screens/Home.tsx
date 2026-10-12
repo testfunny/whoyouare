@@ -22,7 +22,7 @@ export default function Home({ params }: { params: URLSearchParams }) {
         <div className="rotator">
           <span>题题有梗，结果能晒，海报直接存相册</span>
           <span>答得好晒高分，答得差晒「官方认证接盘侠」</span>
-          <span>换个开局再测一次，剧本完全不同</span>
+          <span>三个世界随你穿越 · 换个开局就是新剧本</span>
         </div>
       </div>
 
@@ -49,37 +49,38 @@ export default function Home({ params }: { params: URLSearchParams }) {
 
       <div className="entries fade-in">
         <a className="entry zh" href={quizLink('zh')} data-emoji="📜">
-          <span className="tagline">免费引流款 · 玩梗浓度拉满</span>
+          <span className="tagline">免费 · 玩梗浓度超标</span>
           <span className="badge">限时免费</span>
           <h2>《甄嬛传》宫斗命格测试</h2>
           <div className="desc">
-            圣旨体判词 · 宫斗结局 · 核心武器 · 甄学段位考级。
-            看过剧的会心一笑，没看过的也能选——8道题，出你的命格。
+            八道宫斗情景题，敬事房给你定品级、判结局、发圣旨。
+            看过剧的当场会心，没看过的照样爽——测的是你在深宫能活几集。
           </div>
           <span className="go">揭榜开测 →</span>
           <span className="no">壹</span>
         </a>
 
         <a className="entry hid" href={quizLink('hid')} data-emoji="🌙">
-          <span className="tagline">付费主力款 · 长青系列</span>
-          <span className="badge">表面免费 · 深层解锁</span>
+          <span className="tagline">主打款 · 完整版解锁</span>
+          <span className="badge">表面免费 · 深层上锁</span>
           <h2>隐藏人格测试</h2>
           <div className="desc">
-            表面人设 / 隐藏人格 / 你的开关。免费出第一层，
-            兑换码解锁完整版——含MBTI隐藏配置和付费版海报。
+            你以为你在营业人设，其实是人格在营业你。
+            先押一张「人设卡」，看看你的自我认知翻不翻车——
+            翻车的那一层，才是完整版要拆的。
           </div>
-          <span className="go">查看人设 →</span>
+          <span className="go">押人设卡 →</span>
           <span className="no">贰</span>
         </a>
 
         <a className="entry cf" href={quizLink('cf')} data-emoji="💰">
-          <span className="tagline">爆款新上 · 历史假设</span>
+          <span className="tagline">新上 · 穿越叙事</span>
           <span className="badge">基础免费 · 时间表解锁</span>
           <h2>穿越暴富体质测试</h2>
           <div className="desc">
-            抽一个开局盲盒，回到1998/2008/2015做当年的决定。
-            暴富指数 + 五档体质 + 25年时间轴长图——
-            答得好晒高分，答得差晒「官方认证接盘侠」，双向传播。
+            抽一张开局盲盒，回到你最可能翻盘的那一年。
+            25年10个路口，账本先生全程记毒账——
+            暴富还是照样穷，测完出一张25年时间轴长图。
           </div>
           <span className="go">抽开局 →</span>
           <span className="no">叁</span>
