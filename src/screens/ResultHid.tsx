@@ -142,8 +142,10 @@ export default function ResultHid({ params }: { params: URLSearchParams }) {
             <div className="locked">
               <div className="blur-zone">
                 <p>{hidPreview}……你怕的从来不是……</p>
+                <p>完整解读：这层人格如何在你的关系和职场里发作…</p>
                 <p>你的开关：当有人……</p>
                 <p>MBTI 隐藏配置 ≈ ██▓▓…</p>
+                <p>专属完整版海报：档案卡双面样式…</p>
               </div>
               <div className="lock-overlay">
                 <div className="l-title">🔒 隐藏人格 + 你的开关 + MBTI 配置</div>

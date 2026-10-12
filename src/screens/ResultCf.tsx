@@ -228,8 +228,10 @@ export default function ResultCf({ params }: { params: URLSearchParams }) {
             <div className="locked">
               <div className="blur-zone">
                 <p>平行时间线：如果你当年每次都选对，身家约 █▓▓…</p>
-                <p>错过清单：{identity.year}年你错过了……</p>
-                <p>陷阱解析：那个坑的本质是……</p>
+                <p>错过清单共 {missed.length} 项，其中 █ 项发生在头三年…</p>
+                <p>陷阱解析：那个坑的本质是…</p>
+                <p>三道陷阱你踩了 {r.traps} 道——每道都有一次全身而退的机会…</p>
+                <p>同开局平均线对比 · 金色完整版时间轴长图…</p>
               </div>
               <div className="lock-overlay">
                 <div className="l-title">🔒 平行暴富时间表 + 错过清单 + 陷阱解析</div>
