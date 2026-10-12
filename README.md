@@ -1,13 +1,13 @@
 # whoyouare · 你是谁测试所(三合一测试 H5)
 
-[![Deploy GitHub Pages](https://github.com/wjh941/whoyouare/actions/workflows/deploy-pages.yml/badge.svg)](https://github.com/wjh941/whoyouare/actions/workflows/deploy-pages.yml) [![React](https://img.shields.io/badge/React-18-087EA4?logo=react&logoColor=white)](https://react.dev) [![Vite](https://img.shields.io/badge/Vite-5-646CFF?logo=vite&logoColor=white)](https://vitejs.dev) [![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org)
+[![Deploy GitHub Pages](https://github.com/testfunny/whoyouare/actions/workflows/deploy-pages.yml/badge.svg)](https://github.com/testfunny/whoyouare/actions/workflows/deploy-pages.yml) [![React](https://img.shields.io/badge/React-18-087EA4?logo=react&logoColor=white)](https://react.dev) [![Vite](https://img.shields.io/badge/Vite-5-646CFF?logo=vite&logoColor=white)](https://vitejs.dev) [![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org)
 
 > 题题有梗,结果能晒,海报直接存相册。
 > **答得好晒高分,答得差晒「官方认证接盘侠」——两个方向都要能传播。**
 
 面向小红书虚拟产品变现的三款趣味测试 H5:《甄嬛传》宫斗命格测试(引流款) / 隐藏人格测试(付费主力款) / 穿越暴富体质测试(爆款款)。打开即用,无需注册,后端零依赖,数据只存浏览器本地。
 
-**线上地址(Vercel 主线路): https://whoyouare-five.vercel.app** · 备用线路(GitHub Pages, 国内可达): https://wjh941.github.io/whoyouare/
+**线上地址(Vercel 主线路): https://whoyouare-five.vercel.app** · 备用线路(GitHub Pages, 国内可达): https://testfunny.github.io/whoyouare/
 
 > ⚠️ 定位是娱乐向内容:所有结果仅供娱乐,不构成心理测评或投资建议;穿越款全站规避收益承诺类表述(稳赚/买入/收益/涨停/下注/赔率零出现),历史行情仅做情境还原,结果页与长图均固定展示免责声明。
 
@@ -44,7 +44,7 @@ npm run build      # 构建到 dist/
 部署双线路:
 
 ```bash
-npx vercel deploy --prod --yes    # 主线路: Vercel(账号 wjh941, 项目 whoyouare)
+npx vercel deploy --prod --yes    # 主线路: Vercel(账号 testfunny, 项目 whoyouare)
 git push                           # 备用线路: GitHub Pages(main 分支推送自动触发 workflow 构建)
 ```
 
