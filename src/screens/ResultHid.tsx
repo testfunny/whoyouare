@@ -6,6 +6,7 @@ import { isUnlocked, setUnlocked } from '../lib/codes'
 import { dec, enc, nav, copyText, fullUrl } from '../lib/share'
 import PosterModal from '../components/PosterModal'
 import { Reveal, StatBars, archiveNo } from '../components/ui'
+import NextTests from '../components/NextTests'
 
 const FAMILY_NAME: Record<string, string> = {
   fire: '情绪浓度系',
@@ -156,6 +157,8 @@ export default function ResultHid({ params }: { params: URLSearchParams }) {
           </div>
         </Reveal>
       )}
+
+      <NextTests exclude="hid" />
 
       <div className="actions fade-in">
         <button className="btn primary" onClick={() => setPoster(renderHIDPoster(L, unlocked, r.poles))}>

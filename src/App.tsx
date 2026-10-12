@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Analytics } from '@vercel/analytics/react'
 import { parseHash } from './lib/share'
 import Home from './screens/Home'
 import Quiz from './screens/Quiz'
@@ -31,5 +32,10 @@ export default function App() {
   else if (path === '/unlock') body = <Unlock key={params.get('p') || 'hid'} params={params} />
   else body = <Home params={params} />
 
-  return <div className="shell">{body}</div>
+  return (
+    <div className="shell">
+      {body}
+      <Analytics />
+    </div>
+  )
 }

@@ -478,3 +478,42 @@ export function cfScore(answers: number[], identity: CfIdentity): {
     items
   }
 }
+
+/* ---------- 隐藏结局（原二期预留，已转正） ---------- */
+
+export interface CfEnding {
+  id: 'peak' | 'chosen'
+  name: string
+  kicker: string
+  desc: string
+  /** 评论区钓饵文案 */
+  bait: string
+}
+
+const ENDING_PEAK: CfEnding = {
+  id: 'peak', name: '山顶站岗', kicker: 'HIDDEN ENDING · 官方隐藏结局',
+  desc: '别人恐惧时你贪婪，别人贪婪时你恰好抵达山顶。风很大，你站得很稳——站票也是票，你守住了每一个高点。',
+  bait: '只有极少数狠人解锁过这一幕 · 评论区看看还有谁'
+}
+
+const ENDING_CHOSEN: CfEnding = {
+  id: 'chosen', name: '时代宠儿', kicker: 'HIDDEN ENDING · 稀有结局 · 见到即顶流',
+  desc: '命运翻牌的时候点了你的名。你没赢在聪明，你赢在每次都刚好站在对的时间和对的地点中间——这种人，一个时代也挑不出几个。',
+  bait: '约 1% 的穿越者能见到这一幕 · 敢不敢晒出去？'
+}
+
+/**
+ * 隐藏结局判定（确定性，可复现，不作弊不随机）：
+ * - 时代宠儿：答案种子哈希命中 1/100 且暴富指数 ≥ 92（运气+实力，约1%）
+ * - 山顶站岗：本序列内全部陷阱题都被精准踩满，且暴富指数 < 20
+ */
+export function cfHiddenEnding(identity: CfIdentity, answers: number[], index: number, traps: number): CfEnding | null {
+  let seed = 0
+  const key = identity.id + ':' + answers.join(',')
+  for (let i = 0; i < key.length; i++) seed = (seed * 31 + key.charCodeAt(i)) >>> 0
+  if (index >= 92 && seed % 100 === 7) return ENDING_CHOSEN
+
+  const trapCount = identity.seq.filter(qid => CF_QS[qid]?.opts.some(o => o.trap)).length
+  if (trapCount >= 2 && traps >= trapCount && index < 20) return ENDING_PEAK
+  return null
+}

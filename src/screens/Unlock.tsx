@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { checkCode, setUnlocked, CodeSeries } from '../lib/codes'
 import { nav } from '../lib/share'
+import { track } from '@vercel/analytics'
 
 const COPY: Record<CodeSeries, { title: string; product: string; perks: string[]; ph: string }> = {
   hid: {
@@ -32,6 +33,7 @@ export default function Unlock({ params }: { params: URLSearchParams }) {
     setBusy(false)
     if (ok) {
       setUnlocked(series)
+      try { track('unlock_success', { series }) } catch { /* ignore */ }
       let back = '/'
       try { back = sessionStorage.getItem('wy_return') || '/' } catch { /* ignore */ }
       nav(back)

@@ -86,15 +86,16 @@ git push                           # 备用线路: GitHub Pages(main 分支推�
 5. 甄嬛传款只做免费引流;**任何收费交付物一律用原创体系**(甄嬛传IP仅用于免费款,付费墙在原创的隐藏人格/穿越款上)
 6. AI 生成图片若用于笔记,记得勾"AI合成内容"声明
 
-## 数据埋点(迭代时建议加)
+## 数据埋点
 
-当前无埋点。上线验证期先看小红书侧数据(点击/私信/订单);要精细化漏斗时,在 `Quiz.pick` 和 `ResultHid.goUnlock` 里接 Umami/Plausible 或自建计数接口,关键事件:
-`quiz_start / quiz_finish / poster_save / cp_share / unlock_view / unlock_success`。
+已接入 Vercel Analytics(主线路自动生效,Pages 线路静默忽略),自定义事件 `unlock_success`(区分 HY/CF 系列)。加上小红书店铺访客/订单数与笔记数据,即构成完整漏斗。
+
+后续要加的事件:`quiz_start / quiz_finish / poster_save`(在 `Quiz.pick`、`PosterModal`、`CfFlow` 里用 `track()` 补),关键位置已留好。
 
 ## 第二期预留(架构已留位,未实现)
 
 - **穿越款双人合测**:沿站点通用 `?c=` 参数机制扩展
-- **隐藏结局**:全踩坑触发"天台结局"、约1%概率"时代宠儿"稀有结局——在 `cfScore` 已返回的 `traps/gods` 基础上加判定分支即可
+- **隐藏结局** 已上线:「山顶站岗」(陷阱全踩+指数<20) 与「时代宠儿」(答案哈希命中约1%+指数≥92),判定确定性可复现,见 `src/data/cf.ts` → `cfHiddenEnding`;合测仍在预留池
 
 ## 已知取舍
 

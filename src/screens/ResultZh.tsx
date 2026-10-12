@@ -5,6 +5,7 @@ import { renderZHPoster } from '../lib/poster'
 import { dec, enc, nav, copyText, fullUrl } from '../lib/share'
 import PosterModal from '../components/PosterModal'
 import { Reveal, StatBars, Typewriter, archiveNo } from '../components/ui'
+import NextTests from '../components/NextTests'
 
 export default function ResultZh({ params }: { params: URLSearchParams }) {
   const d = dec<number[]>(params.get('d'))
@@ -134,6 +135,8 @@ export default function ResultZh({ params }: { params: URLSearchParams }) {
           </div>
         </div>
       </Reveal>
+
+      <NextTests exclude="zh" />
 
       <div className="actions fade-in">
         <button className="btn primary" onClick={showPoster}>保存命格圣旨海报</button>

@@ -380,6 +380,11 @@ export function renderCFPoster(
   let dy = y + 306
   for (const ln of wrap(x, tier.desc, 560).slice(0, 3)) { center(x, ln, W / 2, dy); dy += 34 }
 
+  // 挑战文案（截图传播钩子）
+  x.fillStyle = '#f5c542'
+  x.font = `800 26px ${SANS}`
+  center(x, `敢不敢来比 · 暴富指数 ${index}`, W / 2, dy + 48)
+
   // 免责声明 + 页脚
   x.fillStyle = '#6f6d78'
   x.font = `400 17px ${SANS}`

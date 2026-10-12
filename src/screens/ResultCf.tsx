@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react'
-import { CF_IDENTITIES, cfScore, cfMoney, cfFactor, CF_TIERS } from '../data/cf'
+import { CF_IDENTITIES, cfScore, cfMoney, cfFactor, CF_TIERS, cfHiddenEnding } from '../data/cf'
 import { isUnlocked } from '../lib/codes'
 import { dec, nav, copyText, fullUrl } from '../lib/share'
 import { renderCFPoster, CfTlItem } from '../lib/poster'
 import PosterModal from '../components/PosterModal'
 import { Reveal, StatBars, archiveNo } from '../components/ui'
+import NextTests from '../components/NextTests'
 
 export default function ResultCf({ params }: { params: URLSearchParams }) {
   const d = dec<number[]>(params.get('d'))
@@ -52,6 +53,9 @@ export default function ResultCf({ params }: { params: URLSearchParams }) {
   if (bestCount >= 7) extraKws.push('穿越教科书')
   else if (bestCount >= 4) extraKws.push('半仙之体')
   if (extraKws.length === 0) extraKws.push('平平无奇小天才')
+
+  // 隐藏结局（确定性判定，可复现）
+  const ending = cfHiddenEnding(identity, d!, r.index, r.traps)
 
   const items: CfTlItem[] = r.items.map(({ q, opt }) => ({
     year: q.year,
@@ -110,6 +114,17 @@ export default function ResultCf({ params }: { params: URLSearchParams }) {
           </div>
         </div>
       </Reveal>
+
+      {ending && (
+        <Reveal>
+          <div className="section ending-card">
+            <div className="kicker">{ending.kicker}</div>
+            <h2>{ending.name}</h2>
+            <p>{ending.desc}</p>
+            <p className="bait">{ending.bait}</p>
+          </div>
+        </Reveal>
+      )}
 
       <Reveal>
         <div className="section">
@@ -254,6 +269,8 @@ export default function ResultCf({ params }: { params: URLSearchParams }) {
       <div className="foot-note" style={{ color: '#8f8c97' }}>
         本测试仅供娱乐，不构成任何投资建议。
       </div>
+
+      <NextTests exclude="cf" />
 
       <div className="actions fade-in">
         <button

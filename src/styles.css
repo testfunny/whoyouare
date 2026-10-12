@@ -453,3 +453,27 @@ p { line-height: 1.75; }
   display: inline-block; border: 1px dashed rgba(245,197,66,.55); color: #f5c542;
   padding: 2px 12px; border-radius: 6px; letter-spacing: 2px;
 }
+
+/* ---------- 隐藏结局 ---------- */
+.ending-card {
+  border: 1px solid rgba(245,197,66,.65) !important;
+  background: linear-gradient(160deg, rgba(245,197,66,.12), rgba(245,197,66,.03)) !important;
+}
+.ending-card h2 { font-size: 24px; font-weight: 900; margin: 6px 0 8px; }
+.ending-card .bait { color: var(--accent); font-size: 12px; letter-spacing: .5px; margin-top: 10px; }
+
+/* ---------- 结果页互导 ---------- */
+.next-tests { display: flex; flex-direction: column; gap: 10px; }
+.nt-card {
+  display: flex; align-items: center; gap: 12px; text-align: left; width: 100%;
+  background: var(--card2); border: 1px solid var(--line); border-radius: 14px;
+  padding: 13px 14px; cursor: pointer; font-family: inherit;
+}
+.nt-card:active { transform: scale(.985); }
+.nt-emoji { font-size: 26px; flex: none; }
+.nt-body { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.nt-tag { font-size: 10.5px; color: #8f8c97; letter-spacing: .5px; }
+.nt-hid .nt-tag, .nt-cf .nt-tag { color: var(--accent); font-weight: 700; }
+.nt-title { font-size: 14.5px; font-weight: 800; }
+.nt-desc { font-size: 11.5px; color: var(--sub); }
+.nt-go { margin-left: auto; color: var(--accent); font-weight: 900; flex: none; font-size: 18px; }
