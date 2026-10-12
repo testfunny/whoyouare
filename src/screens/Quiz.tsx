@@ -41,6 +41,7 @@ export default function Quiz({ testId, params }: { testId: TestId; params: URLSe
   const [busy, setBusy] = useState(false)
   const [showGen, setShowGen] = useState(false)
   const [flash, setFlash] = useState('')
+  const [flashIcon, setFlashIcon] = useState('🔍')
   const finalRef = useRef<number[]>([])
 
   const q = qs[idx]
@@ -60,8 +61,12 @@ export default function Quiz({ testId, params }: { testId: TestId; params: URLSe
     setSel(oi)
     buzz()
     setBusy(true)
-    const reveal = (q.opts[oi] as { reveal?: string }).reveal
-    if (reveal) setFlash(reveal)
+    const o = q.opts[oi] as { reveal?: string; correct?: boolean }
+    const reveal = o.reveal
+    if (reveal) {
+      setFlash(reveal)
+      setFlashIcon(o.correct === undefined ? '🔍' : o.correct ? '✅' : '❌')
+    }
     setTimeout(() => {
       const next = [...answers, oi]
       setSel(null)
@@ -156,7 +161,7 @@ export default function Quiz({ testId, params }: { testId: TestId; params: URLSe
         {idx === 0 && answers.length === 0 && (
           <div className="q-hint">点选项即作答 · 选错可返回上一题修改</div>
         )}
-        {flash && <div className="reveal-flash">🔍 {flash}</div>}
+        {flash && <div className="reveal-flash">{flashIcon} {flash}</div>}
       </div>
 
       {showGen && (
