@@ -8,8 +8,16 @@ const SERIES: Record<CodeSeries, { hashes: string[]; key: string }> = {
   cf: { hashes: CODE_HASHES_CF, key: 'wy_unlocked_cf' }
 }
 
+/** 归一化：全角→半角、去空格/横杠/零宽字符、统一大写（防手机输入法坑） */
 export function normalizeCode(s: string): string {
-  return s.toUpperCase().replace(/[^A-Z0-9]/g, '')
+  let t = ''
+  for (const ch of s) {
+    const c = ch.codePointAt(0)!
+    if (c === 0x3000) { t += ' '; continue }
+    if (c >= 0xff01 && c <= 0xff5e) { t += String.fromCharCode(c - 0xfee0); continue }
+    t += ch
+  }
+  return t.toUpperCase().replace(/[^A-Z0-9]/g, '')
 }
 
 export async function sha256Hex(text: string): Promise<string> {

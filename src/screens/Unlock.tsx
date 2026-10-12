@@ -38,6 +38,7 @@ export default function Unlock({ params }: { params: URLSearchParams }) {
       try { back = sessionStorage.getItem('wy_return') || '/' } catch { /* ignore */ }
       nav(back)
     } else {
+      try { track('unlock_fail', { series }) } catch { /* ignore */ }
       setErr('兑换码无效，请检查后重试（不区分大小写和横杠）')
     }
   }
