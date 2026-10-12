@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { CF_IDENTITIES, cfScore, cfMoney, cfFactor, CF_TIERS, cfHiddenEnding } from '../data/cf'
+import { CF_IDENTITIES, cfScore, cfMoney, cfFactor, CF_TIERS, cfHiddenEnding, CF_BEST_WHY, CF_TRAP_DEEP, cfProfile, CF_PLAYBOOKS } from '../data/cf'
 import { isUnlocked } from '../lib/codes'
 import { dec, nav, copyText, fullUrl } from '../lib/share'
 import { renderCFPoster, CfTlItem } from '../lib/poster'
@@ -56,6 +56,8 @@ export default function ResultCf({ params }: { params: URLSearchParams }) {
 
   // 隐藏结局（确定性判定，可复现）
   const ending = cfHiddenEnding(identity, d!, r.index, r.traps)
+  // 暴富人格侧写（动态）
+  const prof = cfProfile(r.index, r.traps, r.gods)
 
   const items: CfTlItem[] = r.items.map(({ q, opt }) => ({
     year: q.year,
@@ -69,6 +71,7 @@ export default function ResultCf({ params }: { params: URLSearchParams }) {
     text: q.opts[q.best].tl
   }))
   const parallelMoney = identity.stash * cfFactor(100)
+  const ratio = r.finalMoney > 0 ? Math.round(parallelMoney / r.finalMoney) : 999
   const missed = r.items.filter(({ q }, qi) => d![qi] !== q.best)
   const trapNotes = r.items.filter(({ q }) => q.trapNote)
 
@@ -197,15 +200,38 @@ export default function ResultCf({ params }: { params: URLSearchParams }) {
         <>
           <Reveal>
             <div className="section">
-              <div className="s-title">平行暴富时间表（完整版）</div>
+              <div className="s-title">完整版报告 · 目录</div>
+              <p style={{ fontSize: 12.5, color: 'var(--sub)' }}>
+                模块一 · 暴富人格侧写　模块二 · 平行暴富时间表<br />
+                模块三 · 完整错过清单　模块四 · 陷阱逐题解析<br />
+                模块五 · 同开局通关秘籍
+              </p>
+            </div>
+          </Reveal>
+          <Reveal>
+            <div className="section">
+              <div className="s-title">模块一 · 暴富人格侧写</div>
+              <div className="chips"><span className="chip gold">{prof.title}</span></div>
+              <p style={{ marginTop: 10 }}>{prof.body}</p>
+              <p style={{ marginTop: 10, color: '#ffd166' }}>{prof.agree}</p>
+            </div>
+          </Reveal>
+          <Reveal>
+            <div className="section">
+              <div className="s-title">模块二 · 平行暴富时间表</div>
               <p style={{ marginBottom: 10, color: '#7dd087', fontSize: 13 }}>
                 如果你当年每次都选对——最终身家约 {cfMoney(parallelMoney)}
+                {ratio > 1 ? `，是现在的 ${ratio} 倍` : '。你已经活在最优时间线里，这份表就是你的生平。'}
               </p>
               <div>
-                {parallelItems.map((it, k) => (
+                {r.items.map(({ q }, k) => (
                   <div className="para-line" key={k}>
-                    <div className="tl-year">{it.year}</div>
-                    <div className="tl-text">{it.text}</div>
+                    <div className="tl-year">{q.year}</div>
+                    <div className="tl-text">
+                      {q.opts[q.best].tl}
+                      <br />
+                      <span style={{ color: '#8f8c97', fontSize: 12 }}>为什么是它：{CF_BEST_WHY[q.id]}</span>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -213,13 +239,13 @@ export default function ResultCf({ params }: { params: URLSearchParams }) {
           </Reveal>
           <Reveal>
             <div className="section">
-              <div className="s-title">完整错过清单 · {missed.length} 项（完整版）</div>
+              <div className="s-title">模块三 · 完整错过清单 · {missed.length} 项</div>
               {missed.length === 0 ? (
-                <p>你没有错过任何东西——这本清单是空的，本身就是暴富的证明。</p>
+                <p>清单是空的——你一步都没错过，这本身就是暴富的证明。</p>
               ) : (
                 <ul className="evidence">
                   {missed.map(({ q, opt }, k) => (
-                    <li key={k}><b>{q.year}年</b>{opt.tl}——你选了另一条路</li>
+                    <li key={k}><b>{q.year}年</b>你选了「{opt.t}」——错过：{q.opts[q.best].tl}</li>
                   ))}
                 </ul>
               )}
@@ -227,30 +253,46 @@ export default function ResultCf({ params }: { params: URLSearchParams }) {
           </Reveal>
           <Reveal>
             <div className="section">
-              <div className="s-title">陷阱逐题解析（完整版）</div>
+              <div className="s-title">模块四 · 陷阱逐题解析</div>
+              {trapNotes.length === 0 ? (
+                <p>你一个坑都没踩——解析部分免费送你当奖状。</p>
+              ) : (
+                trapNotes.map(({ q }, k) => (
+                  <div key={k} style={{ marginBottom: 14 }}>
+                    <p><b style={{ color: '#ff8a8d' }}>{q.year}年 · 那个坑</b></p>
+                    <p style={{ marginTop: 6 }}>{(CF_TRAP_DEEP[q.id] || q.trapNote || '').split('\n').map((line, i2) => <span key={i2}>{line}<br /></span>)}</p>
+                  </div>
+                ))
+              )}
+            </div>
+          </Reveal>
+          <Reveal>
+            <div className="section">
+              <div className="s-title">模块五 · {CF_PLAYBOOKS[identity.id].title}</div>
               <ul className="evidence">
-                {trapNotes.map(({ q }, k) => (
-                  <li key={k}><b>{q.year}年</b>{q.trapNote}</li>
+                {CF_PLAYBOOKS[identity.id].steps.map((s, k) => (
+                  <li key={k}><b>第{k + 1}步</b>{s}</li>
                 ))}
               </ul>
+              <p style={{ marginTop: 8, fontSize: 12, color: 'var(--sub)' }}>历史情境复盘 · 仅供娱乐，不构成任何投资建议</p>
             </div>
           </Reveal>
         </>
       ) : (
         <Reveal>
           <div className="section">
-            <div className="s-title">完整版 · 三件套</div>
+            <div className="s-title">完整版报告 · 共 5 模块</div>
             <div className="locked">
               <div className="blur-zone">
-                <p>平行时间线：如果你当年每次都选对，身家约 █▓▓…</p>
-                <p>错过清单共 {missed.length} 项，其中 █ 项发生在头三年…</p>
-                <p>陷阱解析：那个坑的本质是…</p>
-                <p>三道陷阱你踩了 {r.traps} 道——每道都有一次全身而退的机会…</p>
-                <p>同开局平均线对比 · 金色完整版时间轴长图…</p>
+                <p>模块一 · 暴富人格侧写：你的决策模式显示……</p>
+                <p>模块二 · 平行时间表：每次都选对的你，身家约 █▓▓，是现在的 █ 倍…</p>
+                <p>模块三 · 错过清单：{missed.length} 项，每一项都有当年的真相…</p>
+                <p>模块四 · 陷阱解析：那个坑的本质，是有人精确利用了你的…</p>
+                <p>模块五 · 通关秘籍：如果重来一次，你的三步打法是…</p>
               </div>
               <div className="lock-overlay">
-                <div className="l-title">🔒 平行暴富时间表 + 错过清单 + 陷阱解析</div>
-                <div className="l-sub">小红书店铺购买「暴富完整版兑换码」后输入即可<br />一次解锁，永久有效</div>
+                <div className="l-title">🔒 暴富人格侧写 + 时间表 + 解析 + 秘籍</div>
+                <div className="l-sub">小红书店铺购买「暴富完整版兑换码」后输入即可<br />一次解锁，长期有效</div>
                 <button
                   className="btn primary small"
                   onClick={() => {

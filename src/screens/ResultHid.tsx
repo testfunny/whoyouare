@@ -118,39 +118,86 @@ export default function ResultHid({ params }: { params: URLSearchParams }) {
         <>
           <Reveal>
             <div className="section">
-              <div className="s-title">第二层 · 隐藏人格（完整版）</div>
+              <div className="s-title">完整版报告 · 目录</div>
+              <p style={{ fontSize: 12.5, color: 'var(--sub)' }}>
+                模块一 · 隐藏人格　模块二 · 成因分析　模块三 · 关系切片<br />
+                模块四 · 开关与说明　模块五 · 阴影面预警<br />
+                附录 · MBTI隐藏配置 / 你一定说过的话 / 本周练习
+              </p>
+            </div>
+          </Reveal>
+          <Reveal>
+            <div className="section">
+              <div className="s-title">模块一 · 隐藏人格</div>
               <p>{L.hidden}</p>
             </div>
           </Reveal>
           <Reveal>
             <div className="section">
-              <div className="s-title">第三层 · 你的开关（完整版）</div>
+              <div className="s-title">模块二 · 成因分析：这层人格是怎么长出来的</div>
+              <p>{L.deep}</p>
+            </div>
+          </Reveal>
+          <Reveal>
+            <div className="section">
+              <div className="s-title">模块三 · 关系切片：三个场景里的你</div>
+              <p><b style={{ color: '#ffd166' }}>职场</b>　{L.rel[0]}</p>
+              <p style={{ marginTop: 10 }}><b style={{ color: '#ffd166' }}>朋友</b>　{L.rel[1]}</p>
+              <p style={{ marginTop: 10 }}><b style={{ color: '#ffd166' }}>亲密关系</b>　{L.rel[2]}</p>
+            </div>
+          </Reveal>
+          <Reveal>
+            <div className="section">
+              <div className="s-title">模块四 · 你的开关 & 使用说明</div>
               <p>{L.sw}</p>
               <p style={{ marginTop: 10, color: '#ffd166' }}>{L.tip}</p>
             </div>
           </Reveal>
           <Reveal>
             <div className="section">
-              <div className="s-title">MBTI 隐藏配置</div>
+              <div className="s-title">模块五 · 阴影面预警</div>
+              <p>{L.dark}</p>
+            </div>
+          </Reveal>
+          <Reveal>
+            <div className="section">
+              <div className="s-title">附录A · MBTI 隐藏配置</div>
               <p>{L.mbti}</p>
+            </div>
+          </Reveal>
+          <Reveal>
+            <div className="section">
+              <div className="s-title">附录B · 这些话，你一定说过</div>
+              <ul className="evidence">
+                {L.mirror.map((m, i) => <li key={i}>「{m}」</li>)}
+              </ul>
+              <p style={{ marginTop: 8, fontSize: 12, color: 'var(--sub)' }}>——如果命中率超过两条，说明这份报告没白买</p>
+            </div>
+          </Reveal>
+          <Reveal>
+            <div className="section">
+              <div className="s-title">附录C · 本周练习（挑一条做到就值回票价）</div>
+              <ul className="evidence">
+                {L.grow.map((g, i) => <li key={i}><b>练习 {i + 1}</b>{g}</li>)}
+              </ul>
             </div>
           </Reveal>
         </>
       ) : (
         <Reveal>
           <div className="section">
-            <div className="s-title">第二 · 三层 · 完整版</div>
+            <div className="s-title">完整版报告 · 共 5 模块 + 3 附录</div>
             <div className="locked">
               <div className="blur-zone">
-                <p>{hidPreview}……你怕的从来不是……</p>
-                <p>完整解读：这层人格如何在你的关系和职场里发作…</p>
-                <p>你的开关：当有人……</p>
-                <p>MBTI 隐藏配置 ≈ ██▓▓…</p>
-                <p>专属完整版海报：档案卡双面样式…</p>
+                <p>模块一：{hidPreview}……这层人格其实一直在运转…</p>
+                <p>模块二 · 成因分析：这层外壳是怎么一点点长出来的…</p>
+                <p>模块三 · 关系切片：职场 / 朋友 / 亲密关系里的真实你…</p>
+                <p>模块四 · 你的开关 + 模块五 · 阴影面预警…</p>
+                <p>附录：MBTI隐藏配置 + 「你一定说过的话」+ 本周练习…</p>
               </div>
               <div className="lock-overlay">
-                <div className="l-title">🔒 隐藏人格 + 你的开关 + MBTI 配置</div>
-                <div className="l-sub">小红书店铺购买「完整版兑换码」后输入即可<br />一次解锁，永久有效</div>
+                <div className="l-title">🔒 五模块完整报告 + 三附录 + 专属海报</div>
+                <div className="l-sub">小红书店铺购买「完整版兑换码」后输入即可<br />一次解锁，长期有效</div>
                 <button className="btn primary small" onClick={goUnlock}>输入兑换码解锁完整版</button>
               </div>
             </div>

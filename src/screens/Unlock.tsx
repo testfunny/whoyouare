@@ -7,13 +7,13 @@ const COPY: Record<CodeSeries, { title: string; product: string; perks: string[]
   hid: {
     title: '解锁隐藏人格完整版报告',
     product: '「隐藏人格·完整版兑换码」',
-    perks: ['隐藏人格完整解读', '你的开关 + 使用建议', 'MBTI 隐藏配置', '完整版精致海报'],
+    perks: ['五模块完整报告（含成因分析/关系切片/阴影预警）', '你的开关 + 使用建议', 'MBTI 隐藏配置', '附录：你一定说过的话 + 本周练习', '专属完整版精致海报'],
     ph: 'HY-XXXX-XXXX-XXXX-XXXX'
   },
   cf: {
     title: '解锁暴富时间表完整版',
     product: '「暴富体质·完整版兑换码」',
-    perks: ['平行暴富时间表（选对全对的你）', '完整错过清单', '陷阱题逐题解析'],
+    perks: ['暴富人格侧写（动态分析你的决策模式）', '平行暴富时间表（选对全对的你，含逐题解析）', '完整错过清单', '陷阱题逐题深挖', '同开局通关秘籍'],
     ph: 'CF-XXXX-XXXX-XXXX-XXXX'
   }
 }
@@ -58,7 +58,7 @@ export default function Unlock({ params }: { params: URLSearchParams }) {
           <h2>输入兑换码</h2>
           <div className="hint">
             获取方式：小红书店铺「whoyouare测试所」购买{copy.product}，
-            收货后凭卡密在下方输入。一次解锁，永久有效，可解锁：
+            收货后凭卡密在下方输入。一次解锁，长期有效，可解锁：
             {copy.perks.map((s, i) => <span key={i}><br />· {s}</span>)}
           </div>
           <input
