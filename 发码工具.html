@@ -112,30 +112,27 @@
 <!-- 生成 -->
 <div class="modal" id="mGen">
   <div class="m-box">
-    <div class="m-title">＋ 生成新码（<span id="genSeries"></span>）</div>
-    <div class="m-hint">⚠ 同系列重新生成会<b style="color:#ff9a9d">整体替换网站上的哈希</b>：该系列所有未发码全部作废！网站已部署的旧码也会失效。日常补货请优先「导入已有码」。</div>
-    <div style="display:flex;gap:10px">
-      <div style="flex:1">
-        <label style="color:#8f8c97;font-size:12px">数量</label>
-        <input type="number" id="genCount" value="10" min="1" max="200" style="width:100%" />
-      </div>
-      <div style="flex:1">
-        <label style="color:#8f8c97;font-size:12px">位数（勿改小）</label>
-        <select id="genLen" style="width:100%;background:#101014;color:#f2efe6;border:1px solid #3a3a44;border-radius:10px;padding:11px;font-size:13.5px">
-          <option value="16" selected>16 位（安全）</option>
-          <option value="20">20 位</option>
-        </select>
-      </div>
+    <div class="m-title">＋ 补货生成（<span id="genSeries"></span>）</div>
+    <div class="m-hint" id="genWarn"></div>
+    <label style="color:#8f8c97;font-size:12px">数量（16位码，自动入池）</label>
+    <div style="display:flex;gap:8px;margin-top:6px;align-items:center">
+      <button class="btn ghost" style="flex:1;padding:9px 0" onclick="setCnt(1)">1</button>
+      <button class="btn ghost" style="flex:1;padding:9px 0" onclick="setCnt(5)">5</button>
+      <button class="btn ghost" style="flex:1;padding:9px 0" onclick="setCnt(10)">10</button>
+      <button class="btn ghost" style="flex:1;padding:9px 0" onclick="setCnt(20)">20</button>
+      <input type="number" id="genCount" value="10" min="1" max="200" style="width:72px" />
     </div>
     <div class="m-row">
       <button class="btn ghost" onclick="closeModal('mGen')">取消</button>
-      <button class="btn" id="genGo">我确认，生成</button>
+      <button class="btn" id="genGo">生成入池</button>
     </div>
     <div id="genOut" style="display:none">
-      <div class="m-hint" style="margin-top:14px">✅ 已入池（标记为<span style="color:#ff9a9d">未部署</span>）。把下面的哈希文件内容发给开发者更新部署，部署完成后在「备份」旁会出现「标记已部署」。</div>
-      <textarea id="genHash" readonly style="height:120px"></textarea>
+      <div class="m-hint" style="margin-top:14px">✅ 已入池，现在就能「复制并发码」（但买家要等哈希部署后输码才生效）：</div>
+      <div class="pool" id="genList"></div>
+      <div class="m-hint" style="margin-top:12px">⚠ 把下面的哈希文件发给开发者，部署完成后这些码才真正生效：</div>
+      <textarea id="genHash" readonly style="height:110px"></textarea>
       <div class="m-row">
-        <button class="btn ghost" onclick="copyText($('genHash').value)">复制哈希文件</button>
+        <button class="btn ghost" onclick="copyText($('genHash').value,'哈希已复制，发给开发者部署')">复制哈希文件</button>
         <button class="btn" onclick="closeModal('mGen');render()">完成</button>
       </div>
     </div>
@@ -185,6 +182,7 @@
       <button class="btn" onclick="importBak()">从文本恢复</button>
     </div>
     <div class="m-hint" style="margin-top:12px">部署同步：开发者说「哈希已部署」后点这里 → <button class="btn" style="padding:7px 12px;font-size:12px" onclick="markDeployed()">全部标记已部署</button></div>
+    <div class="m-hint" style="margin-top:10px">日常清理：把灰色「已作废」的码从列表里清掉（不影响任何数据）→ <button class="btn ghost" style="padding:7px 12px;font-size:12px" onclick="sweepDead()">清理作废码</button></div>
   </div>
 </div>
 
@@ -251,6 +249,10 @@ function openModal(id) {
   $('tplSeries').textContent = TAB
   $('tplText').value = pool().tpl || DEFAULT_TPL
   $('genOut').style.display = 'none'
+  try { $('genCount').value = localStorage.getItem(KEY + '_gencount') || 10 } catch (e) { $('genCount').value = 10 }
+  $('genWarn').innerHTML = pool().codes.filter(c => c.st === 'ready').length
+    ? '⚠ 该系列还有未发码！重新生成会<b style="color:#ff9a9d">作废它们和所有旧码</b>（网站哈希被整体替换）。日常补码请用「导入已有码」，或直接找开发者要码。'
+    : '生成后自动入池（未部署状态），把哈希文件发给开发者部署后才生效。'
   $(id).classList.add('on')
 }
 function closeModal(id) { $(id).classList.remove('on') }
@@ -295,6 +297,7 @@ function render() {
         ${c.dep ? '' : '<span class="tag w">未部署</span>'}
         ${c.st === 'sent' ? '<span class="tag g">已发</span>' : ''}
         ${c.st === 'dead' ? '<span class="tag w">已作废</span>' : ''}
+        <button class="btn ghost" style="margin-left:auto;padding:3px 9px;font-size:11px;font-weight:400" onclick="delCode('${esc(c.c)}')" title="删除">✕</button>
       </div>
       ${c.note ? `<div class="c-meta">买家：${esc(c.note)}${c.t ? ' · ' + fmtTime(c.t) : ''}</div>` : (c.t && c.st === 'sent' ? `<div class="c-meta">${fmtTime(c.t)}</div>` : '')}
       <div class="c-acts">
@@ -348,6 +351,20 @@ function undoSent(code) {
   save(); render(); toast('已撤回到待发')
 }
 
+/* 删除单码：未部署/已作废的直接删，已部署/已发的确认后删 */
+function delCode(code) {
+  const p = pool()
+  const c = p.codes.find(x => x.c === code)
+  if (!c) return
+  if (c.st === 'sent') {
+    if (!window.confirm('删除后这条发码记录也没了（买家那边码仍然有效）。\n确定删除？')) return
+  } else if (c.st === 'ready' && c.dep) {
+    if (!window.confirm('注意：这个码在网站上仍然有效，删除只是移除本地记录。\n想真正作废需要整批重新生成并部署。\n确定删除记录？')) return
+  }
+  p.codes = p.codes.filter(x => x.c !== code)
+  save(); render(); toast('已删除')
+}
+
 /* ---------- 生成 ---------- */
 function pick(n) {
   const a = new Uint8Array(n); crypto.getRandomValues(a)
@@ -363,28 +380,39 @@ async function sha256hex(t) {
   return [...new Uint8Array(b)].map(x => x.toString(16).padStart(2, '0')).join('')
 }
 
+function setCnt(n) { $('genCount').value = n }
+
 $('genGo').onclick = async () => {
   const readyCnt = pool().codes.filter(c => c.st === 'ready').length
   if (readyCnt > 0) {
-    if (!window.confirm(`该系列还有 ${readyCnt} 个未发出的码。\n\n重新生成会替换网站上的全部哈希——这些未发码和已发未用完的码全部作废！\n\n确定继续？（日常补货请用「导入已有码」）`)) return
-    // 旧码标记作废
+    if (!window.confirm(`该系列还有 ${readyCnt} 个未发码。\n重新生成会替换网站全部哈希——未发码和已发码全部作废。\n确定继续？`)) return
     pool().codes.forEach(c => { if (c.st === 'ready') c.st = 'dead' })
   }
   const count = Math.max(1, Math.min(200, parseInt($('genCount').value || '10', 10)))
-  const len = parseInt($('genLen').value, 10)
+  try { localStorage.setItem(KEY + '_gencount', String(count)) } catch (e) { /* ignore */ }
   const hashes = []
+  const made = []
   for (let i = 0; i < count; i++) {
-    const code = `${TAB}-${fmtCode(len)}`
+    const code = `${TAB}-${fmtCode(16)}`
     if (pool().codes.some(c => c.c === code)) continue
     pool().codes.push({ c: code, st: 'ready', dep: false, t: Date.now(), note: '' })
+    made.push(code)
     hashes.push(await sha256hex(norm(code)))
   }
   save()
+  $('genList').innerHTML = made.map(code => `
+    <div class="code-card">
+      <div class="c-top"><span class="c-val">${code}</span></div>
+      <div class="c-acts">
+        <button class="btn send" onclick="sendCode('${code}')">📋 复制并发码</button>
+        <button class="btn ghost" onclick="copyText('${code}')">复制码</button>
+      </div>
+    </div>`).join('')
   $('genHash').value =
-    `// AUTO-GENERATED 发码工作台 (series ${TAB}, ${len} chars) — 覆盖 src/data/${SERIES[TAB].file}\n` +
+    `// AUTO-GENERATED 发码工作台 (series ${TAB}, 16 chars) — 覆盖 src/data/${SERIES[TAB].file}\n` +
     `export const CODE_HASHES: string[] = [\n` + hashes.map(h => `  '${h}',`).join('\n') + `\n]\n`
   $('genOut').style.display = 'block'
-  render()
+  toast(`已入池 ${made.length} 个`)
 }
 
 /* ---------- 导入 ---------- */
@@ -428,6 +456,12 @@ function markDeployed() {
   let n = 0
   for (const s of ['HY', 'CF']) DB.pools[s].codes.forEach(c => { if (!c.dep) { c.dep = true; n++ } })
   save(); render(); closeModal('mBak'); toast(`${n} 个码标记为已部署`)
+}
+function sweepDead() {
+  const n = pool().codes.filter(c => c.st === 'dead').length
+  if (!n) { toast('没有作废码'); return }
+  pool().codes = pool().codes.filter(c => c.st !== 'dead')
+  save(); render(); toast(`已清理 ${n} 个作废码`)
 }
 
 render()
