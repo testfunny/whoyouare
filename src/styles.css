@@ -30,7 +30,9 @@ html, body {
   min-height: 100vh;
   padding: 0 16px 48px;
   position: relative;
+  transition: opacity .16s ease;
 }
+.shell.page-out { opacity: 0; }
 
 a { color: inherit; text-decoration: none; }
 h1, h2, h3 { margin: 0; font-weight: 800; }

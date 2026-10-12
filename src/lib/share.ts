@@ -8,8 +8,23 @@ export function parseHash(): { path: string; params: URLSearchParams } {
   return { path: path || '/', params }
 }
 
+let navLock = 0
+
+/** 全站翻页过渡：旧页淡出 → 路由提交 → 新页进场动画接管 */
 export function nav(path: string): void {
-  location.hash = path
+  if (location.hash === '#' + path) return
+  const now = Date.now()
+  if (now - navLock < 400) return
+  navLock = now
+  const shell = document.querySelector('.shell')
+  if (!shell) { location.hash = path; return }
+  shell.classList.add('page-out')
+  const done = () => {
+    window.removeEventListener('hashchange', done)
+    window.setTimeout(() => shell.classList.remove('page-out'), 60)
+  }
+  window.addEventListener('hashchange', done)
+  window.setTimeout(() => { location.hash = path }, 150)
 }
 
 export function fullUrl(path: string): string {
