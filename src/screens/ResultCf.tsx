@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { CF_IDENTITIES, cfScore, cfMoney, cfFactor, CF_TIERS, cfHiddenEnding, CF_BEST_WHY, CF_TRAP_DEEP, cfProfile, CF_PLAYBOOKS, cfLetter } from '../data/cf'
+import { CF_IDENTITIES, cfScore, cfMoney, CF_TIERS, cfHiddenEnding, CF_BEST_WHY, CF_TRAP_DEEP, cfProfile, CF_PLAYBOOKS, cfLetter } from '../data/cf'
 import { PRICES } from '../data/prices'
 import { isUnlocked } from '../lib/codes'
 import { dec, nav, copyText, fullUrl } from '../lib/share'
@@ -59,7 +59,7 @@ export default function ResultCf({ params }: { params: URLSearchParams }) {
   const ending = cfHiddenEnding(identity, d!, r.index, r.traps)
   // 暴富人格侧写（动态）
   const prof = cfProfile(r.index, r.traps, r.gods)
-  // 身家走势图（SVG 数据）
+  // 身家走势图（SVG 数据 · 相对开局的倍数，对数轴）
   const chart = (() => {
     const n = r.items.length
     const raw = [1]
@@ -67,9 +67,7 @@ export default function ResultCf({ params }: { params: URLSearchParams }) {
       const mx = Math.max(...q.opts.map(o => o.pts))
       raw.push(raw[raw.length - 1] * (0.4 + (opt.pts / mx) * 1.45))
     })
-    const k = (r.finalMoney / identity.stash) / (raw[n] || 1)
-    const vals = raw.map(v => v * k)
-    const lv = vals.map(v => Math.log10(Math.max(10, v)))
+    const lv = raw.map(v => Math.log10(Math.max(0.02, v)))
     const W = 300
     const H = 132
     const pad = 10
@@ -104,7 +102,8 @@ export default function ResultCf({ params }: { params: URLSearchParams }) {
     year: q.year,
     text: q.opts[q.best].tl
   }))
-  const parallelMoney = identity.stash * cfFactor(100)
+  // 平行线（同源公式：全对 = 每题乘数 1.85）
+  const parallelMoney = identity.stash * Math.pow(1.85, r.items.length)
   const ratio = r.finalMoney > 0 ? Math.round(parallelMoney / r.finalMoney) : 999
   const missed = r.items.filter(({ q }, qi) => d![qi] !== q.best)
   const trapNotes = r.items.filter(({ q }) => q.trapNote)
@@ -219,7 +218,7 @@ export default function ResultCf({ params }: { params: URLSearchParams }) {
             ))}
             <text x={chart.W - 10} y={Number(chart.endY) - 10} textAnchor="end" fill="#f5c542" fontSize="14" fontWeight="700">{cfMoney(r.finalMoney)}</text>
           </svg>
-          <p style={{ marginTop: 8, fontSize: 11.5, color: 'var(--sub)' }}>虚线 = 开局身家 · <span style={{ color: '#ff8a8d' }}>红点</span> = 踩坑 · <span style={{ color: '#ffd166' }}>金星</span> = 神预言</p>
+          <p style={{ marginTop: 8, fontSize: 11.5, color: 'var(--sub)' }}>纵轴为相对开局的倍数（对数）· 虚线 = 开局 · <span style={{ color: '#ff8a8d' }}>红点</span> = 踩坑 · <span style={{ color: '#ffd166' }}>金星</span> = 神预言</p>
         </div>
       </Reveal>
 
@@ -279,7 +278,7 @@ export default function ResultCf({ params }: { params: URLSearchParams }) {
               <div className="s-title">模块二 · 平行暴富时间表</div>
               <p style={{ marginBottom: 10, color: '#7dd087', fontSize: 13 }}>
                 如果你当年每次都选对——最终身家约 {cfMoney(parallelMoney)}
-                {ratio > 1 ? `，是现在的 ${ratio} 倍` : '。你已经活在最优时间线里，这份表就是你的生平。'}
+                {ratio > 1 ? `，是现在的 ${ratio > 9999 ? '9999+' : ratio} 倍` : '。你已经活在最优时间线里，这份表就是你的生平。'}
               </p>
               <div>
                 {r.items.map(({ q }, k) => (

@@ -83,6 +83,8 @@ export default function CfFlow() {
   const [money, setMoney] = useState(0)
   const [butler, setButler] = useState('')
   const [shake, setShake] = useState(false)
+  const [nextTease, setNextTease] = useState(false)
+  const restoredId = raw != null
   const finalRef = useRef<number[]>([])
   const dispRef = useRef(0)
 
@@ -134,6 +136,9 @@ export default function CfFlow() {
     setStashVal(nextStash)
     const mx = Math.max(...q.opts.map(o => o.pts))
     setButler(butlerSay(!!q.opts[oi].trap, !!q.opts[oi].god, q.opts[oi].pts / mx))
+    if (nextList.length < qs.length) {
+      window.setTimeout(() => setNextTease(true), 420)
+    }
     if (q.opts[oi].trap) {
       setShake(true)
       setTimeout(() => setShake(false), 480)
@@ -144,6 +149,7 @@ export default function CfFlow() {
       setFlash('')
       if (nextList.length < qs.length) {
         setAnswers(nextList)
+        setNextTease(false)
         setIdx(i => i + 1)
       } else {
         finalRef.current = nextList
@@ -174,6 +180,9 @@ export default function CfFlow() {
           <span>{idx + 1} / {qs.length}</span>
         </div>
         <ProgressCells total={qs.length} done={idx} zh={false} />
+        {restoredId && answers.length === 0 && (
+          <div className="restore-note">📋 已恢复你上次抽到的开局「{identity.name}」· 账本从头记起</div>
+        )}
         <div style={{ textAlign: 'center' }}>
           <div className={`ledger-strip${shake ? ' shake' : ''}`}>
             <span className="ls-label">身家账本</span>
@@ -204,6 +213,7 @@ export default function CfFlow() {
           <div className="q-hint">凭当年的直觉选 · 选错可返回修改</div>
         )}
         {flash && <div className="reveal-flash">🕰 时间轴 +1：{flash}</div>}
+        {nextTease && qs[idx + 1] && <div className="next-tease">⏪ 翻页中 · 下一站 {qs[idx + 1].year}年 · {qs[idx + 1].label.replace('第?题 · ', '')}</div>}
       </div>
 
       {showGen && (

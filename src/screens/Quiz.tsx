@@ -36,6 +36,7 @@ export default function Quiz({ testId, params }: { testId: TestId; params: URLSe
   const [guess, setGuess] = useState<number | null>(savedGuess)
   const [answers, setAnswers] = useState<number[]>(saved)
   const [idx, setIdx] = useState(saved.length)
+  const restoredQuiz = saved.length > 0
   const [sel, setSel] = useState<number | null>(null)
   const [busy, setBusy] = useState(false)
   const [showGen, setShowGen] = useState(false)
@@ -131,6 +132,9 @@ export default function Quiz({ testId, params }: { testId: TestId; params: URLSe
           <span>{idx + 1} / {qs.length}</span>
         </div>
         <ProgressCells total={qs.length} done={idx} zh={testId === 'zh'} />
+        {restoredQuiz && idx === saved.length && (
+          <div className="restore-note">📝 档案已恢复 · 从第 {saved.length + 1} 题继续，之前的作答都还在</div>
+        )}
       </div>
 
       <div className="q-card slide-in" key={`q${idx}`}>

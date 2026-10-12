@@ -428,15 +428,10 @@ export function cfTierOf(index: number): CfTier {
 
 /** 排行：超过 N% 的穿越者 */
 export function cfOverPercent(index: number): number {
-  return Math.max(3, Math.min(99, Math.round(3 + index * 0.96)))
+  return Math.max(2, Math.min(99, Math.round(100 * Math.pow(index / 100, 1.3))))
 }
 
 /** 身家倍数：低分亏本，高分起飞 */
-export function cfFactor(index: number): number {
-  if (index < 20) return 0.3 + (index / 20) * 0.5
-  return 0.6 + Math.pow(index / 100, 1.5) * 45
-}
-
 export function cfMoney(v: number): string {
   if (v >= 100000000) return `${(v / 100000000).toFixed(1)}亿`
   if (v >= 10000) return `${(v / 10000).toFixed(1)}万`
@@ -466,12 +461,17 @@ export function cfScore(answers: number[], identity: CfIdentity): {
     maxPts += Math.max(...q.opts.map(o => o.pts))
   }
   const index = maxPts > 0 ? Math.round((pts / maxPts) * 100) : 0
-  const factor = cfFactor(index)
+  // 单一事件流：终值 = 开局 × Π(本题乘数 0.4~1.85)。答题页账本、结果页、长图、信件全部同源，永不打架
+  let trail = identity.stash
+  for (const { q, opt } of items) {
+    const mx = Math.max(...q.opts.map(o => o.pts))
+    trail = trail * (0.4 + (opt.pts / mx) * 1.45)
+  }
   return {
     index,
     tier: cfTierOf(index),
     over: cfOverPercent(index),
-    finalMoney: identity.stash * factor,
+    finalMoney: Math.max(100, Math.round(trail)),
     avgMoney: identity.stash * identity.avgFactor,
     traps,
     gods,
@@ -503,13 +503,15 @@ const ENDING_CHOSEN: CfEnding = {
 }
 
 /**
- * 隐藏结局判定（确定性，可复现，不作弊不随机）：
+ * 隐藏结局判定（按天轮换，当天内可复现）：
  * - 时代宠儿：答案种子哈希命中 1/100 且暴富指数 ≥ 92（运气+实力，约1%）
+ *   掺入按天变化的盐——同一份答卷，明天再测有新机会，制造"再来一次"的回访
  * - 山顶站岗：本序列内全部陷阱题都被精准踩满，且暴富指数 < 20
  */
 export function cfHiddenEnding(identity: CfIdentity, answers: number[], index: number, traps: number): CfEnding | null {
+  const daySalt = Math.floor(Date.now() / 86400000)
   let seed = 0
-  const key = identity.id + ':' + answers.join(',')
+  const key = identity.id + ':' + answers.join(',') + ':' + daySalt
   for (let i = 0; i < key.length; i++) seed = (seed * 31 + key.charCodeAt(i)) >>> 0
   if (index >= 92 && seed % 100 === 7) return ENDING_CHOSEN
 
@@ -652,7 +654,8 @@ export function butlerSay(trap: boolean, god: boolean, ratio: number): string {
   return '又薄了一行。他说，这也算一种体验型消费。'
 }
 
-/** 尾声 · 来自平行世界的信（完整版收尾，动态生成） */export function cfLetter(identity: CfIdentity, index: number, traps: number, gods: number, finalMoney: number): string[] {
+/** 尾声 · 来自平行世界的信（完整版收尾，动态生成） */
+export function cfLetter(identity: CfIdentity, index: number, traps: number, gods: number, finalMoney: number): string[] {
   const tierWord = index >= 65
     ? '这趟你走得又稳又远，有好几步我都要起立鼓掌。'
     : index >= 45

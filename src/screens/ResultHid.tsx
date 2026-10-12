@@ -102,7 +102,18 @@ export default function ResultHid({ params }: { params: URLSearchParams }) {
       {vibe && (
         <Reveal>
           <div className={`section prophecy ${prophecyHit ? 'hit' : 'miss'}`}>
-            <div className="kicker">开场预言局 · 对照结果</div>
+            <div className="kicker">开场预言局 · 结算时刻</div>
+            <div className="p-duel">
+              <div className={`p-side ${prophecyHit ? '' : 'lose'}`}>
+                <i>你的押注</i>
+                <b>{vibe.emoji} {vibe.name}</b>
+              </div>
+              <div className="p-vs">vs</div>
+              <div className="p-side">
+                <i>实测裁定</i>
+                <b>{LABEL_EMOJI[L.id]} {L.name}</b>
+              </div>
+            </div>
             {prophecyHit ? (
               <>
                 <h3>预言命中 ✅</h3>
