@@ -2,160 +2,435 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>whoyouare · 发码台（本地版）</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>whoyouare · 发码工作台</title>
 <style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { background: #101014; color: #f2efe6; font-family: "Microsoft YaHei", system-ui, sans-serif; min-height: 100vh; padding: 28px 16px 60px; }
-  .wrap { max-width: 640px; margin: 0 auto; }
-  .topbar { border-top: 8px solid #f5c542; border-bottom: 1px solid #5a4a1c; background: #15130c; padding: 18px 16px; border-radius: 0 0 16px 16px; margin-bottom: 22px; }
-  .kick { color: #f5c542; font-size: 12px; letter-spacing: 3px; font-weight: 800; }
-  h1 { font-size: 24px; margin-top: 6px; }
-  .sub { color: #8f8c97; font-size: 13px; margin-top: 8px; line-height: 1.7; }
-  .card { background: #17171b; border: 1px solid #2a2a30; border-radius: 14px; padding: 16px; margin-bottom: 14px; }
-  .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: end; }
-  .field { display: flex; flex-direction: column; gap: 6px; }
-  label { font-size: 12px; color: #8f8c97; }
-  select, input { background: #101014; border: 1px solid #3a3a44; color: #f2efe6; border-radius: 10px; padding: 10px 12px; font-size: 15px; font-family: inherit; }
-  button { background: #f5c542; color: #141414; border: none; border-radius: 10px; padding: 11px 16px; font-size: 14px; font-weight: 800; cursor: pointer; font-family: inherit; }
-  button.ghost { background: #26262c; color: #d9d6cc; }
-  button:active { transform: scale(.98); }
-  .warn { background: rgba(229,72,77,.1); border: 1px solid rgba(229,72,77,.4); color: #ff9a9d; font-size: 12.5px; line-height: 1.8; border-radius: 12px; padding: 12px 14px; margin-bottom: 14px; }
-  .codes { display: flex; flex-direction: column; gap: 8px; }
-  .code-row { display: flex; align-items: center; gap: 10px; background: #101014; border: 1px dashed #5a4a1c; border-radius: 10px; padding: 10px 12px; }
-  .code-row b { font-family: Consolas, monospace; font-size: 17px; letter-spacing: 1px; color: #ffd166; flex: 1; word-break: break-all; }
-  .code-row button { padding: 6px 10px; font-size: 12px; }
-  .hashbox { margin-top: 14px; }
-  textarea { width: 100%; height: 130px; background: #101014; color: #9be2a8; border: 1px solid #3a3a44; border-radius: 10px; padding: 10px; font-family: Consolas, monospace; font-size: 11px; resize: vertical; }
-  .hint { color: #8f8c97; font-size: 12px; line-height: 1.8; margin-top: 10px; }
-  .toast { position: fixed; left: 50%; bottom: 30px; transform: translateX(-50%); background: #f5c542; color: #141414; padding: 10px 20px; border-radius: 999px; font-weight: 800; font-size: 13px; opacity: 0; transition: opacity .25s; pointer-events: none; }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  body { background: #101014; color: #f2efe6; font-family: "Microsoft YaHei", system-ui, sans-serif; min-height: 100vh; padding: 20px 14px 70px; }
+  .wrap { max-width: 680px; margin: 0 auto; }
+
+  .topbar { border-top: 8px solid #f5c542; background: #15130c; border: 1px solid #5a4a1c; border-top: 8px solid #f5c542; padding: 16px; border-radius: 16px; margin-bottom: 14px; }
+  .kick { color: #f5c542; font-size: 11px; letter-spacing: 3px; font-weight: 800; }
+  h1 { font-size: 21px; margin-top: 5px; }
+  .sub { color: #8f8c97; font-size: 12px; margin-top: 6px; line-height: 1.7; }
+
+  .tabs { display: flex; gap: 8px; margin-bottom: 12px; }
+  .tab { flex: 1; text-align: center; padding: 11px 6px; border-radius: 12px; background: #17171b; border: 1px solid #2a2a30; cursor: pointer; font-weight: 800; font-size: 14px; color: #8f8c97; }
+  .tab.act { border-color: #f5c542; color: #f5c542; background: rgba(245,197,66,.07); }
+  .tab small { display: block; font-size: 10.5px; font-weight: 400; margin-top: 3px; color: #6f6d78; }
+
+  .stats { display: flex; gap: 8px; margin-bottom: 12px; }
+  .chip { flex: 1; background: #17171b; border: 1px solid #2a2a30; border-radius: 12px; padding: 10px 8px; text-align: center; }
+  .chip b { font-size: 20px; display: block; }
+  .chip span { font-size: 11px; color: #8f8c97; }
+  .chip.warn b { color: #ff9a9d; }
+  .chip.gold b { color: #f5c542; }
+
+  .toolbar { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+  .btn { background: #f5c542; color: #141414; border: none; border-radius: 11px; padding: 10px 14px; font-size: 13.5px; font-weight: 800; cursor: pointer; font-family: inherit; }
+  .btn.ghost { background: #26262c; color: #d9d6cc; }
+  .btn:active { transform: scale(.97); }
+  .btn.big { width: 100%; padding: 14px; font-size: 15px; }
+
+  .search { width: 100%; background: #17171b; border: 1px solid #3a3a44; color: #f2efe6; border-radius: 11px; padding: 11px 14px; font-size: 14px; font-family: inherit; margin-bottom: 14px; }
+
+  .sect { font-size: 12.5px; color: #8f8c97; letter-spacing: 1px; margin: 16px 0 8px; font-weight: 800; }
+  .pool { display: flex; flex-direction: column; gap: 8px; }
+  .code-card { background: #17171b; border: 1px solid #2a2a30; border-radius: 13px; padding: 12px 13px; }
+  .code-card.sent { opacity: .62; }
+  .code-card.dead { opacity: .35; }
+  .c-top { display: flex; align-items: center; gap: 8px; }
+  .c-val { font-family: Consolas, monospace; font-size: 15.5px; letter-spacing: .5px; color: #ffd166; flex: 1; word-break: break-all; font-weight: 700; }
+  .tag { font-size: 10px; padding: 2px 8px; border-radius: 999px; flex: none; font-weight: 700; }
+  .tag.w { background: rgba(229,72,77,.14); color: #ff9a9d; border: 1px solid rgba(229,72,77,.4); }
+  .tag.g { background: rgba(125,208,135,.12); color: #9be2a8; border: 1px solid rgba(125,208,135,.35); }
+  .c-meta { color: #6f6d78; font-size: 11px; margin-top: 5px; }
+  .c-acts { display: flex; gap: 8px; margin-top: 10px; }
+  .c-acts .btn { padding: 8px 12px; font-size: 12.5px; }
+  .c-acts .btn.send { flex: 1; }
+  .empty { text-align: center; color: #6f6d78; font-size: 13px; padding: 26px 0; line-height: 1.8; }
+
+  .banner { background: rgba(229,72,77,.1); border: 1px solid rgba(229,72,77,.4); border-radius: 12px; padding: 11px 13px; font-size: 12.5px; color: #ff9a9d; line-height: 1.7; margin-bottom: 12px; display: flex; align-items: center; gap: 10px; }
+  .banner .btn { flex: none; padding: 7px 11px; font-size: 12px; }
+
+  .modal { position: fixed; inset: 0; background: rgba(0,0,0,.72); display: none; align-items: flex-end; justify-content: center; z-index: 50; }
+  .modal.on { display: flex; }
+  .m-box { background: #17171b; border: 1px solid #3a3a44; border-radius: 18px 18px 0 0; width: 100%; max-width: 680px; padding: 18px 16px 26px; max-height: 86vh; overflow-y: auto; }
+  .m-title { font-weight: 900; font-size: 16px; margin-bottom: 12px; color: #f5c542; }
+  .m-hint { color: #8f8c97; font-size: 12px; line-height: 1.8; margin-bottom: 10px; }
+  textarea, input[type=text] { width: 100%; background: #101014; color: #f2efe6; border: 1px solid #3a3a44; border-radius: 10px; padding: 11px; font-size: 13.5px; font-family: inherit; }
+  textarea { font-family: Consolas, monospace; font-size: 12px; }
+  textarea.tpl { font-family: inherit; font-size: 13.5px; height: 190px; }
+  .m-row { display: flex; gap: 8px; margin-top: 12px; }
+  .m-row .btn { flex: 1; }
+  .m-close { position: absolute; } 
+  label.ck { display: flex; align-items: center; gap: 8px; color: #d9d6cc; font-size: 13px; margin-top: 10px; cursor: pointer; }
+  .foot { text-align: center; color: #6f6d78; font-size: 11px; margin-top: 26px; letter-spacing: 1px; line-height: 1.8; }
+  .toast { position: fixed; left: 50%; bottom: 34px; transform: translateX(-50%); background: #f5c542; color: #141414; padding: 10px 22px; border-radius: 999px; font-weight: 800; font-size: 13px; opacity: 0; transition: opacity .25s; pointer-events: none; z-index: 99; white-space: nowrap; }
   .toast.on { opacity: 1; }
-  .foot { text-align: center; color: #6f6d78; font-size: 11.5px; margin-top: 24px; letter-spacing: 1px; }
 </style>
 </head>
 <body>
 <div class="wrap">
   <div class="topbar">
-    <div class="kick">WHOUARE.TEST · 发码台</div>
-    <h1>兑换码生成（本地运行，不联网）</h1>
-    <div class="sub">生成的码只有在哈希更新进网站并重新部署后才会生效。平时要码，最快的方式是直接告诉你的开发者；这个页面是给你应急独立发码用的。</div>
+    <div class="kick">WHOUARE.TEST · 发码工作台</div>
+    <h1>取码 · 发码 · 记账，一页搞定</h1>
+    <div class="sub">数据只存在这台设备的浏览器里（不清缓存就不会丢）。换电脑/手机数据不互通，记得用「备份」导出。</div>
   </div>
 
-  <div class="warn">
-    ⚠ 三条铁律：<br />
-    ① 明文码只显示这一次，生成后立刻复制保存<br />
-    ② 同系列重新生成会<b>整体替换</b>旧哈希——旧码全部作废<br />
-    ③ 位数保持 16 位不要改小：8/12 位会被显卡穷举破解
+  <div class="tabs">
+    <div class="tab act" id="tabHY" onclick="switchTab('HY')">HY · 隐藏人格<small id="cntHY"></small></div>
+    <div class="tab" id="tabCF" onclick="switchTab('CF')">CF · 暴富时间表<small id="cntCF"></small></div>
   </div>
 
-  <div class="card">
-    <div class="row">
-      <div class="field">
-        <label>系列</label>
-        <select id="series">
-          <option value="HY">HY · 隐藏人格完整版</option>
-          <option value="CF">CF · 暴富时间表完整版</option>
-        </select>
-      </div>
-      <div class="field">
-        <label>数量</label>
-        <input id="count" type="number" min="1" max="200" value="10" style="width:90px" />
-      </div>
-      <div class="field">
-        <label>位数（默认16，勿改小）</label>
-        <select id="len">
-          <option value="16" selected>16 位（安全）</option>
-          <option value="20">20 位（更长）</option>
-        </select>
-      </div>
-      <button id="gen">生成</button>
-    </div>
+  <div class="stats">
+    <div class="chip gold"><b id="stReady">0</b><span>待发</span></div>
+    <div class="chip"><b id="stSent">0</b><span>已发</span></div>
+    <div class="chip warn"><b id="stDep">0</b><span>未部署</span></div>
   </div>
 
-  <div class="card" id="out" style="display:none">
-    <div class="row" style="margin-bottom:12px">
-      <button id="copyAll">复制全部明文码</button>
-      <button id="dl" class="ghost">下载 txt</button>
-      <button id="copyHash" class="ghost">复制哈希文件内容</button>
-    </div>
-    <div class="codes" id="list"></div>
-    <div class="hashbox">
-      <label style="display:block;margin-bottom:6px">哈希文件内容（粘贴覆盖 src/data/ 对应 codes*.gen.ts 后重新部署才生效）</label>
-      <textarea id="tsbox" readonly></textarea>
-    </div>
-    <div class="hint">把上面 textarea 的内容发给你的开发者，或自己覆盖 <b>src/data/codes.gen.ts</b>（HY）/ <b>codes_cf.gen.ts</b>（CF）后运行 <b>npx vercel deploy --prod --yes</b> 并 git push。</div>
+  <div id="depBanner"></div>
+
+  <div class="toolbar">
+    <button class="btn" onclick="openModal('mGen')">＋ 生成新码</button>
+    <button class="btn ghost" onclick="openModal('mImp')">导入已有码</button>
+    <button class="btn ghost" onclick="openModal('mTpl')">发送模板</button>
+    <button class="btn ghost" onclick="openModal('mBak')">备份</button>
   </div>
 
-  <div class="foot">whoyouare · 发码台 · 纯前端本地生成 · 不上传任何数据</div>
+  <input class="search" id="q" placeholder="搜号码 / 买家昵称…" oninput="render()" />
+
+  <div class="sect">待发 · 点「复制并发码」直接粘贴给买家</div>
+  <div class="pool" id="readyPool"></div>
+
+  <div class="sect">已发记录</div>
+  <div class="pool" id="sentPool"></div>
+
+  <div class="foot">whoyouare 发码工作台 · 纯本地运行 · 明文码请妥善保管，勿存公用电脑</div>
 </div>
+
+<!-- 生成 -->
+<div class="modal" id="mGen">
+  <div class="m-box">
+    <div class="m-title">＋ 生成新码（<span id="genSeries"></span>）</div>
+    <div class="m-hint">⚠ 同系列重新生成会<b style="color:#ff9a9d">整体替换网站上的哈希</b>：该系列所有未发码全部作废！网站已部署的旧码也会失效。日常补货请优先「导入已有码」。</div>
+    <div style="display:flex;gap:10px">
+      <div style="flex:1">
+        <label style="color:#8f8c97;font-size:12px">数量</label>
+        <input type="number" id="genCount" value="10" min="1" max="200" style="width:100%" />
+      </div>
+      <div style="flex:1">
+        <label style="color:#8f8c97;font-size:12px">位数（勿改小）</label>
+        <select id="genLen" style="width:100%;background:#101014;color:#f2efe6;border:1px solid #3a3a44;border-radius:10px;padding:11px;font-size:13.5px">
+          <option value="16" selected>16 位（安全）</option>
+          <option value="20">20 位</option>
+        </select>
+      </div>
+    </div>
+    <div class="m-row">
+      <button class="btn ghost" onclick="closeModal('mGen')">取消</button>
+      <button class="btn" id="genGo">我确认，生成</button>
+    </div>
+    <div id="genOut" style="display:none">
+      <div class="m-hint" style="margin-top:14px">✅ 已入池（标记为<span style="color:#ff9a9d">未部署</span>）。把下面的哈希文件内容发给开发者更新部署，部署完成后在「备份」旁会出现「标记已部署」。</div>
+      <textarea id="genHash" readonly style="height:120px"></textarea>
+      <div class="m-row">
+        <button class="btn ghost" onclick="copyText($('genHash').value)">复制哈希文件</button>
+        <button class="btn" onclick="closeModal('mGen');render()">完成</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 导入 -->
+<div class="modal" id="mImp">
+  <div class="m-box">
+    <div class="m-title">导入已有明文码（<span id="impSeries"></span>）</div>
+    <div class="m-hint">一行一个，自动去重。从开发者/聊天记录里拿到的码粘进来统一管理。</div>
+    <textarea id="impText" style="height:150px" placeholder="一行一个，如：CF-GPJQ-UD6C-RC9Z-XF74"></textarea>
+    <label class="ck"><input type="checkbox" id="impDep" checked /> 这些码的哈希已在网站上生效（开发者发来的码勾这个）</label>
+    <div class="m-row">
+      <button class="btn ghost" onclick="closeModal('mImp')">取消</button>
+      <button class="btn" onclick="doImport()">导入</button>
+    </div>
+  </div>
+</div>
+
+<!-- 模板 -->
+<div class="modal" id="mTpl">
+  <div class="m-box">
+    <div class="m-title">发送模板（<span id="tplSeries"></span>）</div>
+    <div class="m-hint">「复制并发码」按钮复制的就是这段话。可用变量：<b style="color:#ffd166">{code}</b>（自动换成码）和 <b style="color:#ffd166">{商品}</b>（自动换成当前系列商品名）。</div>
+    <textarea id="tplText" class="tpl"></textarea>
+    <div class="m-row">
+      <button class="btn ghost" onclick="resetTpl()">恢复默认</button>
+      <button class="btn" onclick="saveTpl()">保存模板</button>
+    </div>
+  </div>
+</div>
+
+<!-- 备份 -->
+<div class="modal" id="mBak">
+  <div class="m-box">
+    <div class="m-title">备份与恢复</div>
+    <div class="m-hint">码池数据只存在本机浏览器。清缓存/换设备前，先导出。</div>
+    <div class="m-row">
+      <button class="btn" onclick="exportBak()">导出备份（下载文件）</button>
+      <button class="btn ghost" onclick="copyText(JSON.stringify(DB))">复制备份JSON</button>
+    </div>
+    <div class="m-hint" style="margin-top:14px">恢复：把备份文件内容粘到下面 → 点恢复</div>
+    <textarea id="bakText" style="height:100px"></textarea>
+    <div class="m-row">
+      <button class="btn ghost" onclick="closeModal('mBak')">关闭</button>
+      <button class="btn" onclick="importBak()">从文本恢复</button>
+    </div>
+    <div class="m-hint" style="margin-top:12px">部署同步：开发者说「哈希已部署」后点这里 → <button class="btn" style="padding:7px 12px;font-size:12px" onclick="markDeployed()">全部标记已部署</button></div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
 const ALPHA = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789'
 const norm = s => s.toUpperCase().replace(/[^A-Z0-9]/g, '')
-async function sha256hex(t) {
-  const b = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(t))
-  return [...new Uint8Array(b)].map(x => x.toString(16).padStart(2, '0')).join('')
+const $ = id => document.getElementById(id)
+const SERIES = {
+  HY: { file: 'codes.gen.ts', goods: '隐藏人格·完整版报告' },
+  CF: { file: 'codes_cf.gen.ts', goods: '暴富时间表·完整版' }
 }
+const DEFAULT_TPL = `您好～您的「{商品}」兑换码：
+{code}
+
+使用方法：
+1️⃣ 打开我发您的测试链接
+2️⃣ 测完进入结果页，点「输入兑换码解锁完整版」
+3️⃣ 粘贴上面的码即可，一次解锁永久有效
+
+有任何问题随时找我～`
+
+const KEY = 'wy_codebench_v1'
+let DB = load()
+let TAB = 'HY'
+
+function load() {
+  try {
+    const raw = localStorage.getItem(KEY)
+    if (raw) return JSON.parse(raw)
+  } catch (e) { /* ignore */ }
+  return {
+    pools: {
+      HY: { codes: [], tpl: DEFAULT_TPL },
+      CF: { codes: [], tpl: DEFAULT_TPL }
+    }
+  }
+}
+function save() { try { localStorage.setItem(KEY, JSON.stringify(DB)) } catch (e) { toast('保存失败：浏览器存储不可用') } }
+function pool() { return DB.pools[TAB] }
+function esc(s) { return String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])) }
+
+function toast(msg) {
+  const t = $('toast'); t.textContent = msg; t.classList.add('on')
+  clearTimeout(t._tm); t._tm = setTimeout(() => t.classList.remove('on'), 1700)
+}
+function copyText(text, msg) {
+  const done = () => toast(msg || '已复制')
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(done).catch(() => fallbackCopy(text, done))
+  } else fallbackCopy(text, done)
+}
+function fallbackCopy(text, done) {
+  const ta = document.createElement('textarea'); ta.value = text
+  ta.style.position = 'fixed'; ta.style.opacity = '0'
+  document.body.appendChild(ta); ta.select()
+  try { document.execCommand('copy'); done() } catch (e) { toast('复制失败，请手动选择') }
+  ta.remove()
+}
+function openModal(id) {
+  $('impSeries').textContent = TAB
+  $('genSeries').textContent = TAB
+  $('tplSeries').textContent = TAB
+  $('tplText').value = pool().tpl || DEFAULT_TPL
+  $('genOut').style.display = 'none'
+  $(id).classList.add('on')
+}
+function closeModal(id) { $(id).classList.remove('on') }
+
+function switchTab(s) {
+  TAB = s
+  $('tabHY').classList.toggle('act', s === 'HY')
+  $('tabCF').classList.toggle('act', s === 'CF')
+  render()
+}
+
+function fmtTime(ts) {
+  const d = new Date(ts)
+  const p = n => String(n).padStart(2, '0')
+  return `${d.getMonth() + 1}/${d.getDate()} ${p(d.getHours())}:${p(d.getMinutes())}`
+}
+
+function render() {
+  const p = pool()
+  const q = ($('q').value || '').trim().toUpperCase()
+  const match = c => !q || c.c.toUpperCase().includes(q) || (c.note || '').toUpperCase().includes(q)
+
+  const ready = p.codes.filter(c => c.st === 'ready' && match(c))
+  const sent = p.codes.filter(c => c.st === 'sent' && match(c)).sort((a, b) => (b.t || 0) - (a.t || 0))
+  const dead = p.codes.filter(c => c.st === 'dead').length
+  const undep = p.codes.filter(c => c.st === 'ready' && !c.dep).length
+  const allSent = p.codes.filter(c => c.st === 'sent').length
+
+  $('stReady').textContent = p.codes.filter(c => c.st === 'ready').length
+  $('stSent').textContent = allSent
+  $('stDep').textContent = undep
+  $('cntHY').textContent = poolCnt('HY')
+  $('cntCF').textContent = poolCnt('CF')
+  $('depBanner').innerHTML = undep > 0
+    ? `<div class="banner">⚠ 有 ${undep} 个码的哈希还没部署到网站，现在发出去买家输码会无效。把哈希发给开发者，部署完成后到「备份」里点「全部标记已部署」。</div>`
+    : (allSent + p.codes.filter(c => c.st === 'ready').length + dead > 0 ? '' : '')
+
+  const card = c => `
+    <div class="code-card ${c.st === 'sent' ? 'sent' : ''} ${c.st === 'dead' ? 'dead' : ''}">
+      <div class="c-top">
+        <span class="c-val">${esc(c.c)}</span>
+        ${c.dep ? '' : '<span class="tag w">未部署</span>'}
+        ${c.st === 'sent' ? '<span class="tag g">已发</span>' : ''}
+        ${c.st === 'dead' ? '<span class="tag w">已作废</span>' : ''}
+      </div>
+      ${c.note ? `<div class="c-meta">买家：${esc(c.note)}${c.t ? ' · ' + fmtTime(c.t) : ''}</div>` : (c.t && c.st === 'sent' ? `<div class="c-meta">${fmtTime(c.t)}</div>` : '')}
+      <div class="c-acts">
+        ${c.st === 'ready' ? `
+          <button class="btn send" onclick="sendCode('${esc(c.c)}')">📋 复制并发码</button>
+          <button class="btn ghost" onclick="markSent('${esc(c.c)}')">标记已发</button>
+        ` : ''}
+        ${c.st === 'sent' ? `<button class="btn ghost" onclick="copyText('${esc(c.c)}')">复制码</button><button class="btn ghost" onclick="undoSent('${esc(c.c)}')">撤回</button>` : ''}
+        ${c.st === 'dead' ? `<button class="btn ghost" onclick="copyText('${esc(c.c)}')">复制码</button>` : ''}
+      </div>
+    </div>`
+
+  $('readyPool').innerHTML = ready.length
+    ? ready.map(card).join('')
+    : `<div class="empty">暂无待发码<br />点上方「＋ 生成新码」或「导入已有码」</div>`
+  $('sentPool').innerHTML = sent.length
+    ? sent.map(card).join('')
+    : `<div class="empty">还没有发码记录</div>`
+}
+
+function poolCnt(s) {
+  const cs = DB.pools[s].codes
+  return `待发 ${cs.filter(c => c.st === 'ready').length} · 已发 ${cs.filter(c => c.st === 'sent').length}`
+}
+
+function findCode(code) { return pool().codes.find(c => c.c === code) }
+
+function sendCode(code) {
+  const tpl = pool().tpl || DEFAULT_TPL
+  const msg = tpl.replace(/{code}/g, code).replace(/{商品}/g, SERIES[TAB].goods)
+  copyText(msg, '已复制：码 + 使用说明，去私信粘贴')
+  markSent(code, true)
+}
+
+function markSent(code, silent) {
+  const c = findCode(code)
+  if (!c || c.st !== 'ready') return
+  let note = ''
+  if (!silent) {
+    note = window.prompt('买家昵称/备注（可留空）：', c.note || '')
+    if (note === null) return
+  }
+  c.st = 'sent'; c.t = Date.now(); c.note = note || c.note || ''
+  save(); render()
+  if (!silent) toast('已标记发出')
+}
+function undoSent(code) {
+  const c = findCode(code)
+  if (!c) return
+  c.st = 'ready'; delete c.t
+  save(); render(); toast('已撤回到待发')
+}
+
+/* ---------- 生成 ---------- */
 function pick(n) {
   const a = new Uint8Array(n); crypto.getRandomValues(a)
   return [...a].map(x => ALPHA[x % ALPHA.length]).join('')
 }
-function fmt(n) {
+function fmtCode(n) {
   const g = []
   for (let i = 0; i < n; i += 4) g.push(pick(Math.min(4, n - i)))
   return g.join('-')
 }
-let CURRENT = []
-
-const $ = id => document.getElementById(id)
-function toast(msg) {
-  const t = $('toast'); t.textContent = msg; t.classList.add('on')
-  setTimeout(() => t.classList.remove('on'), 1600)
+async function sha256hex(t) {
+  const b = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(t))
+  return [...new Uint8Array(b)].map(x => x.toString(16).padStart(2, '0')).join('')
 }
-async function copy(text) {
-  try { await navigator.clipboard.writeText(text); toast('已复制') }
-  catch {
-    const ta = document.createElement('textarea'); ta.value = text; document.body.appendChild(ta)
-    ta.select(); document.execCommand('copy'); ta.remove(); toast('已复制')
+
+$('genGo').onclick = async () => {
+  const readyCnt = pool().codes.filter(c => c.st === 'ready').length
+  if (readyCnt > 0) {
+    if (!window.confirm(`该系列还有 ${readyCnt} 个未发出的码。\n\n重新生成会替换网站上的全部哈希——这些未发码和已发未用完的码全部作废！\n\n确定继续？（日常补货请用「导入已有码」）`)) return
+    // 旧码标记作废
+    pool().codes.forEach(c => { if (c.st === 'ready') c.st = 'dead' })
   }
-}
-
-$('gen').onclick = async () => {
-  const series = $('series').value
-  const count = Math.max(1, Math.min(200, parseInt($('count').value || '10', 10)))
-  const len = parseInt($('len').value, 10)
-  CURRENT = []
+  const count = Math.max(1, Math.min(200, parseInt($('genCount').value || '10', 10)))
+  const len = parseInt($('genLen').value, 10)
   const hashes = []
   for (let i = 0; i < count; i++) {
-    const code = `${series}-${fmt(len)}`
-    CURRENT.push(code)
+    const code = `${TAB}-${fmtCode(len)}`
+    if (pool().codes.some(c => c.c === code)) continue
+    pool().codes.push({ c: code, st: 'ready', dep: false, t: Date.now(), note: '' })
     hashes.push(await sha256hex(norm(code)))
   }
-  $('list').innerHTML = CURRENT.map((c, i) =>
-    `<div class="code-row"><b>${c}</b><button data-i="${i}" class="cp">复制</button></div>`
-  ).join('')
-  document.querySelectorAll('.cp').forEach(btn => {
-    btn.onclick = () => copy(CURRENT[Number(btn.dataset.i)])
-  })
-  $('tsbox').value =
-    `// AUTO-GENERATED 发码台 (series ${series}, ${len} chars) — 覆盖 src/data/${series === 'CF' ? 'codes_cf.gen.ts' : 'codes.gen.ts'}\n` +
-    `export const CODE_HASHES: string[] = [\n` +
-    hashes.map(h => `  '${h}',`).join('\n') +
-    `\n]\n`
-  $('out').style.display = 'block'
-  window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' })
+  save()
+  $('genHash').value =
+    `// AUTO-GENERATED 发码工作台 (series ${TAB}, ${len} chars) — 覆盖 src/data/${SERIES[TAB].file}\n` +
+    `export const CODE_HASHES: string[] = [\n` + hashes.map(h => `  '${h}',`).join('\n') + `\n]\n`
+  $('genOut').style.display = 'block'
+  render()
 }
 
-$('copyAll').onclick = () => copy(CURRENT.join('\r\n'))
-$('copyHash').onclick = () => copy($('tsbox').value)
-$('dl').onclick = () => {
-  const blob = new Blob([CURRENT.join('\r\n')], { type: 'text/plain' })
+/* ---------- 导入 ---------- */
+function doImport() {
+  const dep = $('impDep').checked
+  const lines = ($('impText').value || '').split(/[\r\n,，;；\s]+/).map(s => s.trim()).filter(Boolean)
+  let added = 0, dup = 0, bad = 0
+  for (const line of lines) {
+    const n = norm(line)
+    if (!n.startsWith(TAB) || n.length < 10) { bad++; continue }
+    const withDash = n.startsWith(TAB + '-')
+    const code = withDash ? line.toUpperCase().replace(/[^A-Z0-9-]/g, '') : `${TAB}-${n.slice(2).replace(/(.{4})(?=.)/g, '$1-')}`
+    if (pool().codes.some(c => c.c === code || norm(c.c) === n)) { dup++; continue }
+    pool().codes.push({ c: code, st: 'ready', dep, t: Date.now(), note: '' })
+    added++
+  }
+  save(); render(); closeModal('mImp'); $('impText').value = ''
+  toast(`导入 ${added} 个${dup ? `，重复跳过 ${dup}` : ''}${bad ? `，无效 ${bad}` : ''}`)
+}
+
+/* ---------- 模板 ---------- */
+function resetTpl() { $('tplText').value = DEFAULT_TPL }
+function saveTpl() { pool().tpl = $('tplText').value; save(); closeModal('mTpl'); toast('模板已保存') }
+
+/* ---------- 备份 ---------- */
+function exportBak() {
+  const blob = new Blob([JSON.stringify(DB)], { type: 'application/json' })
   const a = document.createElement('a')
   a.href = URL.createObjectURL(blob)
-  a.download = `${$('series').value}-codes-${new Date().toISOString().slice(0, 10)}.txt`
+  a.download = `whoyouare-码池备份-${new Date().toISOString().slice(0, 10)}.json`
   a.click(); URL.revokeObjectURL(a.href)
 }
+function importBak() {
+  try {
+    const obj = JSON.parse($('bakText').value)
+    if (!obj.pools || !obj.pools.HY || !obj.pools.CF) throw new Error('bad')
+    DB = obj; save(); render(); closeModal('mBak'); toast('已恢复')
+  } catch (e) { toast('备份内容无效') }
+}
+function markDeployed() {
+  let n = 0
+  for (const s of ['HY', 'CF']) DB.pools[s].codes.forEach(c => { if (!c.dep) { c.dep = true; n++ } })
+  save(); render(); closeModal('mBak'); toast(`${n} 个码标记为已部署`)
+}
+
+render()
 </script>
 </body>
 </html>
