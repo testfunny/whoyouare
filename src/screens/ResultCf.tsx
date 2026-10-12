@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { CF_IDENTITIES, cfScore, cfMoney, cfFactor, CF_TIERS, cfHiddenEnding, CF_BEST_WHY, CF_TRAP_DEEP, cfProfile, CF_PLAYBOOKS } from '../data/cf'
+import { CF_IDENTITIES, cfScore, cfMoney, cfFactor, CF_TIERS, cfHiddenEnding, CF_BEST_WHY, CF_TRAP_DEEP, cfProfile, CF_PLAYBOOKS, cfLetter } from '../data/cf'
 import { isUnlocked } from '../lib/codes'
 import { dec, nav, copyText, fullUrl } from '../lib/share'
 import { renderCFPoster, CfTlItem } from '../lib/poster'
@@ -58,6 +58,33 @@ export default function ResultCf({ params }: { params: URLSearchParams }) {
   const ending = cfHiddenEnding(identity, d!, r.index, r.traps)
   // 暴富人格侧写（动态）
   const prof = cfProfile(r.index, r.traps, r.gods)
+  // 身家走势图（SVG 数据）
+  const chart = (() => {
+    const n = r.items.length
+    const raw = [1]
+    r.items.forEach(({ q, opt }) => {
+      const mx = Math.max(...q.opts.map(o => o.pts))
+      raw.push(raw[raw.length - 1] * (0.85 + (opt.pts / mx) * 0.9))
+    })
+    const k = (r.finalMoney / identity.stash) / (raw[n] || 1)
+    const vals = raw.map(v => v * k)
+    const lv = vals.map(v => Math.log10(Math.max(10, v)))
+    const W = 300
+    const H = 132
+    const pad = 10
+    const lo = Math.min(...lv)
+    const hi = Math.max(...lv)
+    const x = (i: number) => pad + (i / n) * (W - pad * 2)
+    const y = (v: number) => H - pad - ((v - lo) / ((hi - lo) || 1)) * (H - pad * 2)
+    const pts = lv.map((v, i) => `${x(i).toFixed(1)},${y(v).toFixed(1)}`).join(' ')
+    const dots = r.items.map(({ opt }, i) => ({
+      cx: x(i + 1).toFixed(1),
+      cy: y(lv[i + 1]).toFixed(1),
+      trap: !!opt.trap,
+      god: !!opt.god
+    }))
+    return { pts, dots, W, H, baseY: y(lv[0]).toFixed(1), endY: y(lv[n]).toFixed(1) }
+  })()
 
   const items: CfTlItem[] = r.items.map(({ q, opt }) => ({
     year: q.year,
@@ -163,6 +190,29 @@ export default function ResultCf({ params }: { params: URLSearchParams }) {
               一次神级预判，零次踩坑——你这不是穿越，是回家。
             </p>
           )}
+        </div>
+      </Reveal>
+
+      <Reveal>
+        <div className="section">
+          <div className="s-title">身家走势图 · 这一路的过山车</div>
+          <svg viewBox={`0 0 ${chart.W} ${chart.H}`} style={{ width: '100%', height: 'auto', display: 'block' }}>
+            <line x1={10} x2={chart.W - 10} y1={chart.baseY} y2={chart.baseY} stroke="#4a4a55" strokeDasharray="4 4" strokeWidth="1" />
+            <polyline points={chart.pts} fill="none" stroke="#f5c542" strokeWidth="2.5" strokeLinejoin="round" strokeLinecap="round" />
+            {chart.dots.map((d, i) => (
+              <circle
+                key={i}
+                cx={d.cx}
+                cy={d.cy}
+                r={d.trap || d.god ? 4.5 : 2.5}
+                fill={d.trap ? '#ff5a5f' : d.god ? '#ffffff' : '#f5c542'}
+                stroke={d.god ? '#f5c542' : 'none'}
+                strokeWidth={d.god ? 2 : 0}
+              />
+            ))}
+            <text x={chart.W - 10} y={Number(chart.endY) - 10} textAnchor="end" fill="#f5c542" fontSize="14" fontWeight="700">{cfMoney(r.finalMoney)}</text>
+          </svg>
+          <p style={{ marginTop: 8, fontSize: 11.5, color: 'var(--sub)' }}>虚线 = 开局身家 · <span style={{ color: '#ff8a8d' }}>红点</span> = 踩坑 · <span style={{ color: '#ffd166' }}>金星</span> = 神预言</p>
         </div>
       </Reveal>
 
@@ -275,6 +325,14 @@ export default function ResultCf({ params }: { params: URLSearchParams }) {
                 ))}
               </ul>
               <p style={{ marginTop: 8, fontSize: 12, color: 'var(--sub)' }}>历史情境复盘 · 仅供娱乐，不构成任何投资建议</p>
+            </div>
+          </Reveal>
+          <Reveal>
+            <div className="section">
+              <div className="s-title">尾声 · 来自平行世界的信</div>
+              {cfLetter(identity, r.index, r.traps, r.gods, r.finalMoney).map((p, k) => (
+                <p key={k} style={{ marginTop: k ? 10 : 0, fontStyle: 'italic', color: k === 0 ? '#f5c542' : undefined, lineHeight: 1.9 }}>{p}</p>
+              ))}
             </div>
           </Reveal>
         </>

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { HID_QS, HID_CP } from '../data/hid'
+import { HID_QS, HID_CP, HID_VIBES } from '../data/hid'
 import { scoreHID } from '../lib/scoring'
 import { renderHIDPoster } from '../lib/poster'
 import { isUnlocked, setUnlocked } from '../lib/codes'
@@ -12,6 +12,22 @@ const FAMILY_NAME: Record<string, string> = {
   fire: '情绪浓度系',
   ice: '人间清醒系',
   wind: '社交灵活系'
+}
+
+/* 人格 emoji 战力条 */
+const LABEL_EMOJI: Record<string, string> = {
+  danfeng: '😑 ⚔️ 🤯',
+  qinglian: '🧠 💘 😵',
+  dungan: '🎧 🛡️ 😴',
+  gaoqian: '📊 💼 🔒',
+  changE: '🎪 🔋 🌙',
+  foxi: '🧘 📈 🔥',
+  xinruan: '😇 📒 🚪',
+  emo: '☀️ 🎭 🌙',
+  tuoyan: '⏳ ⚡ ✨',
+  duanzi: '🗿 🎤 😂',
+  taohao: '😇 🌵 🦔',
+  duxing: '🐺 📱 🍲'
 }
 
 export default function ResultHid({ params }: { params: URLSearchParams }) {
@@ -28,6 +44,14 @@ export default function ResultHid({ params }: { params: URLSearchParams }) {
 
   const r = scoreHID(d)
   const L = r.label
+
+  /* 预言局对照 */
+  const gi = (() => {
+    const n = Number(params.get('g'))
+    return Number.isInteger(n) && n >= 0 && n < HID_VIBES.length ? n : null
+  })()
+  const vibe = gi != null ? HID_VIBES[gi] : null
+  const prophecyHit = vibe ? vibe.ids.includes(L.id) : false
 
   const cp = dec<{ t: string; f: string }>(params.get('c'))
   const rel = cp?.f ? (HID_CP[`${cp.f}|${L.family}`] || HID_CP[`${L.family}|${cp.f}`]) : null
@@ -67,9 +91,29 @@ export default function ResultHid({ params }: { params: URLSearchParams }) {
       <div className={`result-hero fade-in family hh-${L.family}`} data-char={L.name.slice(0, 1)}>
         <div className="kicker">隐藏人格 · 测定完毕</div>
         <h1>{L.name}</h1>
+        <div className="hero-emoji">{LABEL_EMOJI[L.id] || '🎭'}</div>
         <div className="hook">{L.hook}</div>
         <div className="arch">档案编号 {archiveNo(d.join(','), 'HID')} · {FAMILY_NAME[L.family]}存档</div>
       </div>
+
+      {vibe && (
+        <Reveal>
+          <div className={`section prophecy ${prophecyHit ? 'hit' : 'miss'}`}>
+            <div className="kicker">开场预言局 · 对照结果</div>
+            {prophecyHit ? (
+              <>
+                <h3>预言命中 ✅</h3>
+                <p>你押了「{vibe.name}」，实测确实是这条街的——你对表面人设的认知相当到位。但提醒一句：这一层是免费看的。<b style={{ color: '#ffd166' }}>完整版拆的，是你没押到的那一层。</b></p>
+              </>
+            ) : (
+              <>
+                <h3>预言翻车 🎭</h3>
+                <p>你押的是「{vibe.name}」，测出来是「{L.name}」。自评和实测之间的这段差距，就是你隐藏层的厚度——<b style={{ color: '#ffd166' }}>完整版专门拆它。</b></p>
+              </>
+            )}
+          </div>
+        </Reveal>
+      )}
 
       {rel && (
         <div className="cp-card fade-in">

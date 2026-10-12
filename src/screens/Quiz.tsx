@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { ZH_QS } from '../data/zh'
-import { HID_QS } from '../data/hid'
+import { HID_QS, HID_VIBES } from '../data/hid'
 import { enc, nav } from '../lib/share'
 import { TestId } from '../data/types'
 import { ProgressCells } from '../components/ui'
@@ -24,11 +24,22 @@ export default function Quiz({ testId, params }: { testId: TestId; params: URLSe
     return [] as number[]
   })()
 
+  const savedGuess = (() => {
+    try {
+      const raw = sessionStorage.getItem('wy_hid_guess')
+      const n = raw == null ? NaN : Number(raw)
+      if (Number.isInteger(n) && n >= 0 && n < HID_VIBES.length) return n
+    } catch { /* ignore */ }
+    return null
+  })()
+
+  const [guess, setGuess] = useState<number | null>(savedGuess)
   const [answers, setAnswers] = useState<number[]>(saved)
   const [idx, setIdx] = useState(saved.length)
   const [sel, setSel] = useState<number | null>(null)
   const [busy, setBusy] = useState(false)
   const [showGen, setShowGen] = useState(false)
+  const [flash, setFlash] = useState('')
   const finalRef = useRef<number[]>([])
 
   const q = qs[idx]
@@ -48,17 +59,20 @@ export default function Quiz({ testId, params }: { testId: TestId; params: URLSe
     setSel(oi)
     buzz()
     setBusy(true)
+    const reveal = (q.opts[oi] as { reveal?: string }).reveal
+    if (reveal) setFlash(reveal)
     setTimeout(() => {
       const next = [...answers, oi]
       setSel(null)
       setBusy(false)
+      setFlash('')
       if (next.length < qs.length) {
         setAnswers(next)
         setIdx(i => i + 1)
       } else {
         finish(next)
       }
-    }, 260)
+    }, reveal ? 980 : 260)
   }
 
   const back = () => {
@@ -68,6 +82,40 @@ export default function Quiz({ testId, params }: { testId: TestId; params: URLSe
       setIdx(i => i - 1)
       save(rest)
     }
+  }
+
+  /* ---- 隐藏人格 · 开场预言局 ---- */
+  if (testId === 'hid' && guess === null) {
+    const pickVibe = (i: number) => {
+      setGuess(i)
+      buzz()
+      try { sessionStorage.setItem('wy_hid_guess', String(i)) } catch { /* ignore */ }
+    }
+    return (
+      <>
+        <div className="topbar">
+          <button className="back" onClick={() => nav('/')}>← 首页</button>
+        </div>
+
+        <div className="result-hero fade-in family hh-wind" style={{ paddingBottom: 14 }}>
+          <div className="kicker">PROPHECY · 开场预言局</div>
+          <h1 style={{ fontSize: 25 }}>先押注：你觉得自己是哪一挂？</h1>
+          <div className="hook">凭直觉选一张——测完对照，看看你对自己的认知是「命中」还是「翻车」。</div>
+        </div>
+
+        <div className="vibe-grid fade-in">
+          {HID_VIBES.map((v, i) => (
+            <button className="vibe-card" key={v.id} onClick={() => pickVibe(i)}>
+              <span className="v-emoji">{v.emoji}</span>
+              <span className="v-name">{v.name}</span>
+              <span className="v-desc">{v.desc}</span>
+            </button>
+          ))}
+        </div>
+
+        <div className="foot-note">这一押不扣分 · 只影响结尾的「预言对照」</div>
+      </>
+    )
   }
 
   return (
@@ -104,6 +152,7 @@ export default function Quiz({ testId, params }: { testId: TestId; params: URLSe
         {idx === 0 && answers.length === 0 && (
           <div className="q-hint">点选项即作答 · 选错可返回上一题修改</div>
         )}
+        {flash && <div className="reveal-flash">🔍 {flash}</div>}
       </div>
 
       {showGen && (
@@ -111,7 +160,9 @@ export default function Quiz({ testId, params }: { testId: TestId; params: URLSe
           testId={testId}
           onDone={() => {
             try { sessionStorage.removeItem(storeKey) } catch { /* ignore */ }
-            nav(`/result/${testId}?d=${enc(finalRef.current)}${c ? `&c=${c}` : ''}`)
+            try { sessionStorage.removeItem('wy_hid_guess') } catch { /* ignore */ }
+            const g = testId === 'hid' && guess !== null ? `&g=${guess}` : ''
+            nav(`/result/${testId}?d=${enc(finalRef.current)}${g}${c ? `&c=${c}` : ''}`)
           }}
         />
       )}

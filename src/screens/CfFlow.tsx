@@ -78,6 +78,7 @@ export default function CfFlow() {
   const [sel, setSel] = useState<number | null>(null)
   const [busy, setBusy] = useState(false)
   const [showGen, setShowGen] = useState(false)
+  const [flash, setFlash] = useState('')
   const finalRef = useRef<number[]>([])
 
   const identity = idIdx != null ? CF_IDENTITIES[idIdx] : null
@@ -94,10 +95,12 @@ export default function CfFlow() {
     setSel(oi)
     buzz(8)
     setBusy(true)
+    setFlash(q.opts[oi].tl)
     setTimeout(() => {
       const next = [...answers, oi]
       setSel(null)
       setBusy(false)
+      setFlash('')
       if (next.length < qs.length) {
         setAnswers(next)
         setIdx(i => i + 1)
@@ -105,7 +108,7 @@ export default function CfFlow() {
         finalRef.current = next
         setShowGen(true)
       }
-    }, 260)
+    }, 900)
   }
 
   const back = () => {
@@ -149,6 +152,7 @@ export default function CfFlow() {
         {idx === 0 && answers.length === 0 && (
           <div className="q-hint">凭当年的直觉选 · 选错可返回修改</div>
         )}
+        {flash && <div className="reveal-flash">🕰 时间轴 +1：{flash}</div>}
       </div>
 
       {showGen && (
