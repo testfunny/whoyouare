@@ -46,6 +46,32 @@ function newCanvas(): { c: HTMLCanvasElement; x: CanvasRenderingContext2D } {
   return { c, x }
 }
 
+/* 纸纹颗粒：最后整层罩上，海报截图自带印刷质感 */
+function grain(x: CanvasRenderingContext2D) {
+  const W = x.canvas.width
+  const H = x.canvas.height
+  const t = document.createElement('canvas')
+  t.width = 96
+  t.height = 96
+  const tc = t.getContext('2d')
+  if (!tc) return
+  const img = tc.createImageData(96, 96)
+  for (let i = 0; i < img.data.length; i += 4) {
+    const v = 90 + Math.random() * 140
+    img.data[i] = v
+    img.data[i + 1] = v
+    img.data[i + 2] = v
+    img.data[i + 3] = 13
+  }
+  tc.putImageData(img, 0, 0)
+  const pat = x.createPattern(t, 'repeat')
+  if (!pat) return
+  x.save()
+  x.fillStyle = pat
+  x.fillRect(0, 0, W, H)
+  x.restore()
+}
+
 /* ============ 甄嬛传 · 圣旨海报 ============ */
 
 export function renderZHPoster(
@@ -158,6 +184,7 @@ export function renderZHPoster(
   x.font = `500 17px ${SANS}`
   center(x, 'whoyouare · 宫斗命格测试', W / 2, 916)
 
+  grain(x)
   return c.toDataURL('image/png')
 }
 
@@ -270,6 +297,7 @@ export function renderHIDPoster(label: HidLabel, premium: boolean, poles: Record
   x.font = `500 17px ${SANS}`
   center(x, 'whoyouare · 隐藏人格测试', W / 2, 916)
 
+  grain(x)
   return c.toDataURL('image/png')
 }
 
@@ -393,5 +421,6 @@ export function renderCFPoster(
   x.font = `500 18px ${SANS}`
   center(x, 'whoyouare · 穿越暴富体质测试', W / 2, H - 64)
 
+  grain(x)
   return c.toDataURL('image/png')
 }

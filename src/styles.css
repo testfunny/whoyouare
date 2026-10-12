@@ -597,3 +597,13 @@ h1, .result-hero h1, .entry h2, .ending-card h3, .feng {
   box-shadow: 0 14px 34px rgba(0,0,0,.22);
 }
 body { letter-spacing: .015em; }
+
+/* ---------- 舒适轮 · 动效放缓 + 阅读呼吸 ---------- */
+.fade-in { animation: fadein .55s cubic-bezier(.22, 1, .36, 1); }
+@keyframes fadein { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+.slide-in { animation: slidein .45s cubic-bezier(.22, 1, .36, 1) both; }
+@keyframes slidein { from { opacity: 0; transform: translateX(14px); } to { opacity: 1; transform: none; } }
+.section { margin-top: 18px; padding: 20px 19px; border-radius: 20px; }
+.section p { line-height: 1.88; }
+.evidence { gap: 12px; }
+.evidence li { line-height: 1.78; }
