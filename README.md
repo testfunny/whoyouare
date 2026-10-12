@@ -51,10 +51,11 @@ git push                           # 备用线路: GitHub Pages(main 分支推�
 ## 兑换码机制
 
 - 两套独立码池:`HY-` 开头解锁隐藏人格完整版,`CF-` 开头解锁暴富时间表完整版,互不通用
-- 生成:`node scripts/gen-codes.mjs 10 HY`(隐藏人格) / `node scripts/gen-codes.mjs 10 CF`(暴富)
+- 生成:`node scripts/gen-codes.mjs 10 HY 16`(隐藏人格) / `node scripts/gen-codes.mjs 10 CF 16`(暴富);或双击根目录 `发码工具.html` 本地图形界面生成
+- **码长默认 16 位(4位一组)**:哈希在公开前端包里,8/12位可被GPU穷举,16位(80bit)不可行——不要用短码售卖
 - 明文码只在生成时打印一次,前端只存 SHA-256 哈希,抓包/看源码拿不到码
 - 重新运行同系列会**整体替换**哈希列表,旧码全部失效;要追加就手动把新哈希粘进对应 `codes*.gen.ts`
-- 码强度为 8 位无易混淆字符,无法暴力穷举;但**用户截图转发码无法防**,按单份卖、不回收
+- **用户截图转发码无法防**,按单份卖、不回收
 - 解锁状态存 localStorage(`wy_unlocked` / `wy_unlocked_cf`),换设备需重新输入
 
 ## 改内容(不用懂代码)

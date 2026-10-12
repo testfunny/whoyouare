@@ -8,13 +8,13 @@ const COPY: Record<CodeSeries, { title: string; product: string; perks: string[]
     title: '解锁隐藏人格完整版报告',
     product: '「隐藏人格·完整版兑换码」',
     perks: ['隐藏人格完整解读', '你的开关 + 使用建议', 'MBTI 隐藏配置', '完整版精致海报'],
-    ph: 'HY-XXXX-XXXX'
+    ph: 'HY-XXXX-XXXX-XXXX-XXXX'
   },
   cf: {
     title: '解锁暴富时间表完整版',
     product: '「暴富体质·完整版兑换码」',
     perks: ['平行暴富时间表（选对全对的你）', '完整错过清单', '陷阱题逐题解析'],
-    ph: 'CF-XXXX-XXXX'
+    ph: 'CF-XXXX-XXXX-XXXX-XXXX'
   }
 }
 
@@ -66,7 +66,7 @@ export default function Unlock({ params }: { params: URLSearchParams }) {
             value={code}
             onChange={e => setCode(e.target.value.toUpperCase())}
             placeholder={copy.ph}
-            maxLength={16}
+            maxLength={30}
             onKeyDown={e => { if (e.key === 'Enter') submit() }}
           />
           <div className="unlock-err">{err}</div>
