@@ -115,14 +115,15 @@ export default function CfFlow() {
   const q = qs[idx]
 
   const calcStash = (list: number[]) => {
+    // 与结果页 cfScore 完全同源：整条链算完再钳制，不做逐步下限
     let v = identity.stash
     list.forEach((oi, qi) => {
       const qq = qs[qi]
       if (!qq) return
       const mx = Math.max(...qq.opts.map(o => o.pts))
-      v = Math.max(100, Math.round(v * (0.4 + (qq.opts[oi].pts / mx) * 1.45)))
+      v = v * (0.4 + (qq.opts[oi].pts / mx) * 1.45)
     })
-    return v
+    return Math.max(100, Math.round(v))
   }
 
   const pick = (oi: number) => {
@@ -155,7 +156,7 @@ export default function CfFlow() {
         finalRef.current = nextList
         setShowGen(true)
       }
-    }, 900)
+    }, 650)
   }
 
   const back = () => {
@@ -164,6 +165,7 @@ export default function CfFlow() {
       setAnswers(rest)
       setIdx(i => i - 1)
       setStashVal(calcStash(rest))
+      setButler('')
     }
   }
 
