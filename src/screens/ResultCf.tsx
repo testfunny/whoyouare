@@ -108,6 +108,51 @@ export default function ResultCf({ params }: { params: URLSearchParams }) {
   const missed = r.items.filter(({ q }, qi) => d![qi] !== q.best)
   const trapNotes = r.items.filter(({ q }) => q.trapNote)
 
+  /* 改命模拟器：与结算页同一事件流，仅替换指定年份的选择（同源公式，链尾同钳制） */
+  const simulate = (replace: (q: (typeof r.items)[0]['q'], cur: (typeof r.items)[0]['opt']) => (typeof r.items)[0]['opt'] | null): number => {
+    let v = identity.stash
+    for (const { q, opt } of r.items) {
+      const use = replace(q, opt) || opt
+      const mx = Math.max(...q.opts.map(o => o.pts))
+      v *= 0.4 + (use.pts / mx) * 1.45
+    }
+    return Math.max(100, Math.round(v))
+  }
+  const godSim = simulate((q, cur) => {
+    if (cur.god) return null
+    const g = q.opts.find(o => o.god)
+    return g || null
+  })
+  const noTrapSim = simulate((q, cur) => (cur.trap ? q.opts[q.best] : null))
+  const mine = r.finalMoney
+  const simMax = Math.max(parallelMoney, mine, 1)
+
+  /* 账本底账：逐年累计倍数（链尾统一钳制，与结算同源） */
+  const ledger: { year: string; t: string; mult: number; kind?: 'trap' | 'god' }[] = []
+  {
+    let m = 1
+    r.items.forEach(({ q, opt }) => {
+      const mx = Math.max(...q.opts.map(o => o.pts))
+      m *= 0.4 + (opt.pts / mx) * 1.45
+      ledger.push({ year: q.year, t: opt.t, mult: m, kind: opt.trap ? 'trap' : opt.god ? 'god' : undefined })
+    })
+  }
+  const simRows = [
+    { name: '你的时间线 · 实际发生', v: mine, mine: true },
+    { name: '补上所有神预言', v: godSim, mine: false },
+    { name: '只避开所有的坑', v: noTrapSim, mine: false },
+    { name: '每一步都选对', v: parallelMoney, mine: false }
+  ]
+  const simLog = (v: number) => Math.log10(Math.max(2, v))
+  const simLo = Math.min(...simRows.map(s => simLog(s.v)))
+  const simHi = Math.max(...simRows.map(s => simLog(s.v)))
+  const simW = (v: number) => Math.max(4, Math.round(((simLog(v) - simLo) / ((simHi - simLo) || 1)) * 100))
+  const simQuip = mine >= parallelMoney
+    ? '没有可改的命——你已经是偏差最小的那条时间线。'
+    : (noTrapSim - mine) >= (godSim - mine)
+      ? '账本先生批注：对你伤害最大的从来不是错过风口，是主动跳坑。'
+      : '账本先生批注：你的命运杠杆在预言力，不在避坑力。'
+
   const flash = (msg: string) => {
     setToast(msg)
     setTimeout(() => setToast(''), 2200)
@@ -260,7 +305,8 @@ export default function ResultCf({ params }: { params: URLSearchParams }) {
               <p style={{ fontSize: 12.5, color: 'var(--sub)' }}>
                 模块一 · 暴富人格侧写　模块二 · 平行暴富时间表<br />
                 模块三 · 完整错过清单　模块四 · 陷阱逐题解析<br />
-                模块五 · 同开局通关秘籍　尾声 · 平行世界的信
+                模块五 · 同开局通关秘籍　尾声 · 平行世界的信<br />
+                附 · 改命模拟器 + 账本先生逐年底账
               </p>
               <p style={{ marginTop: 8, fontSize: 12.5, color: '#ffd166', fontWeight: 700 }}>本份报告约 {cfWords} 字 · 按你的 25 年剧本单独生成</p>
             </div>
@@ -292,6 +338,29 @@ export default function ResultCf({ params }: { params: URLSearchParams }) {
                   </div>
                 ))}
               </div>
+            </div>
+          </Reveal>
+          <Reveal>
+            <div className="section">
+              <div className="s-title">改命模拟器 · 三条时间线对账</div>
+              <p style={{ marginBottom: 12, fontSize: 12.5, color: 'var(--sub)' }}>
+                同一本账、同一个你，只改指定的选择——每条线都按结算页同源公式重算，不是编的数字。
+              </p>
+              {simRows.map((s, k) => (
+                <div className={`sim-row${s.mine ? ' mine' : ''}`} key={k}>
+                  <div className="sim-top">
+                    <i>{s.name}</i>
+                    <b className={s.mine ? 'mine' : undefined}>
+                      {cfMoney(s.v)}
+                      {!s.mine && s.v > mine && <span className="sim-delta">×{Math.max(2, Math.round(s.v / Math.max(1, mine)))} 于你</span>}
+                      {s.mine && <span className="sim-delta" style={{ color: '#f5c542' }}>← 你在这</span>}
+                    </b>
+                  </div>
+                  <div className="sim-track"><div className="sim-fill" style={{ width: `${simW(s.v)}%` }} /></div>
+                </div>
+              ))}
+              <p style={{ marginTop: 12, fontSize: 13, color: '#ffd166' }}>{simQuip}</p>
+              <p style={{ marginTop: 8, fontSize: 11.5, color: 'var(--sub)' }}>历史情境复盘 · 仅供娱乐，不构成任何投资建议。</p>
             </div>
           </Reveal>
           <Reveal>
@@ -336,6 +405,26 @@ export default function ResultCf({ params }: { params: URLSearchParams }) {
           </Reveal>
           <Reveal>
             <div className="section">
+              <div className="s-title">附录 · 账本先生底账（逐年）</div>
+              <p style={{ marginBottom: 10, fontSize: 12.5, color: 'var(--sub)' }}>你每年的选择和当年的身家倍数，一笔一笔抄给你——对账请对这里。</p>
+              {ledger.map((row, k) => (
+                <div className={`lg-row${k === ledger.length - 1 ? ' lg-final' : ''}`} key={k}>
+                  <div className="lg-year">{row.year}</div>
+                  <div className="lg-text">
+                    {row.t}
+                    {row.kind === 'trap' && <span className="tl-badge trap">坑</span>}
+                    {row.kind === 'god' && <span className="tl-badge god">神</span>}
+                  </div>
+                  <div className="lg-mult">×{row.mult >= 100 ? Math.round(row.mult) : row.mult.toFixed(2)}</div>
+                </div>
+              ))}
+              <p style={{ marginTop: 10, fontSize: 12, color: 'var(--sub)' }}>
+                最终身家 = 开局 {identity.stashText} × 累计倍数（下限 ¥100）· 与结算页同一本账，分毫不差。
+              </p>
+            </div>
+          </Reveal>
+          <Reveal>
+            <div className="section">
               <div className="s-title">尾声 · 来自平行世界的信</div>
               {cfLetter(identity, r.index, r.traps, r.gods, r.finalMoney).map((p, k) => (
                 <p key={k} style={{ marginTop: k ? 10 : 0, fontStyle: 'italic', color: k === 0 ? '#f5c542' : undefined, lineHeight: 1.9 }}>{p}</p>
@@ -358,7 +447,7 @@ export default function ResultCf({ params }: { params: URLSearchParams }) {
               <div className="lock-overlay">
                 <div className="l-title">🔒 暴富人格侧写 + 时间表 + 解析 + 秘籍</div>
                 <div className="l-sub">小红书店铺购买「暴富完整版兑换码」后输入即可<br />一次解锁，长期有效</div>
-                <div className="l-price">完整版 ¥{PRICES.cf} · {cfWords} 字 · 5模块+1封信</div>
+                <div className="l-price">完整版 ¥{PRICES.cf} · {cfWords} 字 · 5模块+1封信+底账</div>
                 <button
                   className="btn primary small"
                   onClick={() => {

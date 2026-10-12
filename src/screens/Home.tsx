@@ -43,7 +43,7 @@ export default function Home({ params }: { params: URLSearchParams }) {
         <div className="cp-banner fade-in">
           <b> 有人向你发来战书 </b>
           <br />
-          好友已测出「{cp.t === 'hid' ? '隐藏人格' : cp.t === 'cf' ? '暴富体质' : '宫斗命格'}」，测完解锁你们的关系局。
+          好友已测出「{cp.t === 'hid' ? '隐藏人格' : '宫斗命格'}」，测完解锁你们的关系局。
         </div>
       )}
 

@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react'
-import { HID_QS, HID_CP, HID_VIBES } from '../data/hid'
+import { HID_QS, HID_CP, HID_VIBES, HID_LABELS } from '../data/hid'
 import { PRICES } from '../data/prices'
 import { scoreHID } from '../lib/scoring'
 import { renderHIDPoster } from '../lib/poster'
 import { isUnlocked, setUnlocked } from '../lib/codes'
 import { dec, enc, nav, copyText, fullUrl } from '../lib/share'
 import PosterModal from '../components/PosterModal'
-import { Reveal, StatBars, archiveNo } from '../components/ui'
+import { Reveal, archiveNo } from '../components/ui'
 import NextTests from '../components/NextTests'
 
 const FAMILY_NAME: Record<string, string> = {
@@ -85,6 +85,46 @@ export default function ResultHid({ params }: { params: URLSearchParams }) {
       return { label: `${na} ↔ ${nb}`, v: pct, hint: `${pct} : ${100 - pct}` }
     })
 
+  /* 雷达图几何：四轴菱形 */
+  const axisPcts = axisItems.map(a => a.v)
+  const RC = 88
+  const RR = 70
+  const ringPts = (f: number) => [0, 1, 2, 3].map(i => {
+    const ang = (-90 + i * 90) * Math.PI / 180
+    return `${(RC + RR * f * Math.cos(ang)).toFixed(1)},${(RC + RR * f * Math.sin(ang)).toFixed(1)}`
+  }).join(' ')
+  const radarPts = axisPcts.map((v, i) => {
+    const ang = (-90 + i * 90) * Math.PI / 180
+    const rr = (v / 100) * RR
+    return { x: RC + rr * Math.cos(ang), y: RC + rr * Math.sin(ang) }
+  })
+  const AXIS_SHORT = ['社交', '外放', '行动', '讨好']
+
+  /* 隐藏层厚度：四轴极性强度 + 自认知偏差（预言局），确定性可复现 */
+  const polarity = Math.round(axisPcts.reduce((s, v) => s + Math.abs(v - 50), 0) / 2)
+  let thickness = Math.min(100, Math.round(22 + polarity * 0.9))
+  if (gi != null) thickness = Math.min(100, thickness + (prophecyHit ? 6 : 18))
+  const thicknessTier = thickness >= 85 ? '厚到能当防弹衣'
+    : thickness >= 65 ? '相当有厚度'
+    : thickness >= 45 ? '常规厚度'
+    : thickness >= 25 ? '偏薄 · 基本透明'
+    : '薄如蝉翼 · 明牌型选手'
+
+  /* 同类档案室 */
+  const myVibe = HID_VIBES.find(v => v.ids.includes(L.id))
+  const sibs = myVibe ? myVibe.ids.filter(id => id !== L.id).slice(0, 2) : []
+  const sibLabels = sibs
+    .map(id => HID_LABELS.find(x => x.id === id))
+    .filter((x): x is NonNullable<typeof x> => !!x)
+
+  /* 附录B · 口头禅命中互动 */
+  const [mirrorHits, setMirrorHits] = useState<boolean[]>(() => L.mirror.map(() => false))
+  const hitCount = mirrorHits.filter(Boolean).length
+  const mirrorQuip = hitCount >= 3 ? '全中。这份档案就是为你立的案，本案审结。'
+    : hitCount === 2 ? '命中率过半——档案可信，建议归档。'
+    : hitCount === 1 ? '轻微命中。表面那层没白测。'
+    : '一条没中？档案室怀疑你答题时在演别人。'
+
   return (
     <>
       <div className="topbar">
@@ -146,9 +186,34 @@ export default function ResultHid({ params }: { params: URLSearchParams }) {
 
       <Reveal>
         <div className="section">
-          <div className="s-title">人格四轴</div>
-          <StatBars items={axisItems} />
-          <p style={{ marginTop: 10, fontSize: 12, color: 'var(--sub)' }}>由你的 8 次选择判定 · 决定你的结果标签</p>
+          <div className="s-title">人格四轴 · 雷达</div>
+          <div className="radar-wrap">
+            <svg viewBox="0 0 176 176" role="img" aria-label="人格四轴雷达图">
+              {[0.25, 0.5, 0.75, 1].map(f => <polygon key={f} points={ringPts(f)} className="radar-ring" />)}
+              {[0, 1, 2, 3].map(i => {
+                const ang = (-90 + i * 90) * Math.PI / 180
+                return <line key={i} x1={RC} y1={RC} x2={RC + RR * Math.cos(ang)} y2={RC + RR * Math.sin(ang)} className="radar-axis" />
+              })}
+              <polygon points={radarPts.map(p => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ')} className="radar-poly" />
+              {radarPts.map((p, i) => <circle key={i} cx={p.x.toFixed(1)} cy={p.y.toFixed(1)} r={3} className="radar-dot" />)}
+              <text x={RC} y={RC - RR - 7} textAnchor="middle" fill="#9b98a3" fontSize="10">{AXIS_SHORT[0]}</text>
+              <text x={RC + RR + 5} y={RC + 3} textAnchor="start" fill="#9b98a3" fontSize="10">{AXIS_SHORT[1]}</text>
+              <text x={RC} y={RC + RR + 13} textAnchor="middle" fill="#9b98a3" fontSize="10">{AXIS_SHORT[2]}</text>
+              <text x={RC - RR - 5} y={RC + 3} textAnchor="end" fill="#9b98a3" fontSize="10">{AXIS_SHORT[3]}</text>
+            </svg>
+          </div>
+          <p className="radar-cap">读数 · 社交 {axisPcts[0]} : {100 - axisPcts[0]} 独处 · 外放 {axisPcts[1]} : {100 - axisPcts[1]} 内收<br />行动 {axisPcts[2]} : {100 - axisPcts[2]} 谋定 · 讨好 {axisPcts[3]} : {100 - axisPcts[3]} 边界</p>
+        </div>
+      </Reveal>
+
+      <Reveal>
+        <div className="section">
+          <div className="s-title">隐藏层厚度 · 检测</div>
+          <div className="meter-tier"><b>{thicknessTier}</b><span style={{ fontSize: 12, color: 'var(--sub)' }}>{thickness} / 100</span></div>
+          <div className="meter"><div className="meter-fill" style={{ width: `${thickness}%` }} /></div>
+          <p style={{ marginTop: 10, fontSize: 12.5, color: 'var(--sub)', lineHeight: 1.8 }}>
+            厚度 = 你四轴的极性强度（偏移指数 {polarity}）{gi != null ? (prophecyHit ? ' + 预言命中修正' : ' + 自认知偏差修正') : ''}。壳越厚，说明表面人设和底下那台机器的差值越大——<b style={{ color: '#ffd166' }}>完整版拆的就是这个差值。</b>
+          </p>
         </div>
       </Reveal>
 
@@ -180,7 +245,7 @@ export default function ResultHid({ params }: { params: URLSearchParams }) {
               <p style={{ fontSize: 12.5, color: 'var(--sub)' }}>
                 模块一 · 隐藏人格　模块二 · 成因分析　模块三 · 关系切片<br />
                 模块四 · 开关与说明　模块五 · 阴影面预警<br />
-                附录 · MBTI隐藏配置 / 你一定说过的话 / 本周练习
+                附录 · MBTI隐藏配置 / 你一定说过的话 / 本周练习 / 同类档案室
               </p>
               <p style={{ marginTop: 8, fontSize: 12.5, color: '#ffd166', fontWeight: 700 }}>本份报告约 {reportWords} 字 · 按你的答案单独生成</p>
             </div>
@@ -215,7 +280,7 @@ export default function ResultHid({ params }: { params: URLSearchParams }) {
           <Reveal>
             <div className="section">
               <div className="s-title">模块五 · 阴影面预警</div>
-              <p>{L.dark}</p>
+              <div className="shadow-card"><p>{L.dark}</p></div>
             </div>
           </Reveal>
           <Reveal>
@@ -226,11 +291,19 @@ export default function ResultHid({ params }: { params: URLSearchParams }) {
           </Reveal>
           <Reveal>
             <div className="section">
-              <div className="s-title">附录B · 这些话，你一定说过</div>
-              <ul className="evidence">
-                {L.mirror.map((m, i) => <li key={i}>「{m}」</li>)}
-              </ul>
-              <p style={{ marginTop: 8, fontSize: 12, color: 'var(--sub)' }}>——如果命中率超过两条，说明这份报告没白买</p>
+              <div className="s-title">附录B · 这些话，你一定说过（点你中过的）</div>
+              {L.mirror.map((m, i) => (
+                <button
+                  key={i}
+                  className={`mirror-row${mirrorHits[i] ? ' on' : ''}`}
+                  onClick={() => setMirrorHits(h => h.map((v, j) => (j === i ? !v : v)))}
+                >
+                  <span className="mk">{mirrorHits[i] ? '✅' : '⬜'}</span>「{m}」
+                </button>
+              ))}
+              <p style={{ marginTop: 10, fontSize: 12.5, color: hitCount >= 2 ? '#9be2a8' : 'var(--sub)' }}>
+                命中 {hitCount} / {L.mirror.length} —— {mirrorQuip}
+              </p>
             </div>
           </Reveal>
           <Reveal>
@@ -241,6 +314,21 @@ export default function ResultHid({ params }: { params: URLSearchParams }) {
               </ul>
             </div>
           </Reveal>
+          {sibLabels.length > 0 && myVibe && (
+            <Reveal>
+              <div className="section">
+                <div className="s-title">附录D · 同类档案室 · {myVibe.name}柜</div>
+                <p style={{ fontSize: 13, color: 'var(--sub)' }}>和你存进同一个档案柜的邻居——你八成能在里面认出一个人。</p>
+                {sibLabels.map(s => (
+                  <div className="sib-card" key={s.id}>
+                    <b>{s.name}</b>
+                    <p>{s.hook}</p>
+                  </div>
+                ))}
+                <p style={{ marginTop: 10, fontSize: 12, color: 'var(--sub)' }}>——把测试甩给 TA，验证一下档案室有没有放错柜子</p>
+              </div>
+            </Reveal>
+          )}
         </>
       ) : (
         <Reveal>
@@ -252,12 +340,12 @@ export default function ResultHid({ params }: { params: URLSearchParams }) {
                 <p>模块二 · 成因分析：这层外壳是怎么一点点长出来的…</p>
                 <p>模块三 · 关系切片：职场 / 朋友 / 亲密关系里的真实你…</p>
                 <p>模块四 · 你的开关 + 模块五 · 阴影面预警…</p>
-                <p>附录：MBTI隐藏配置 + 「你一定说过的话」+ 本周练习…</p>
+                <p>附录：MBTI隐藏配置 + 「你一定说过的话」+ 本周练习 + 同类档案室…</p>
               </div>
               <div className="lock-overlay">
-                <div className="l-title">🔒 五模块完整报告 + 三附录 + 专属海报</div>
+                <div className="l-title">🔒 五模块完整报告 + 四附录 + 专属海报</div>
                 <div className="l-sub">小红书店铺购买「完整版兑换码」后输入即可<br />一次解锁，长期有效</div>
-                <div className="l-price">完整版 ¥{PRICES.hid} · {reportWords} 字 · 5模块+3附录</div>
+                <div className="l-price">完整版 ¥{PRICES.hid} · {reportWords} 字 · 5模块+4附录</div>
                 <button className="btn primary small" onClick={goUnlock}>输入兑换码解锁完整版</button>
               </div>
             </div>
