@@ -33,6 +33,15 @@
 | **档案编号** | 每份报告按答案生成稳定编号(敬事房存字 / 人格档案库 / 平行账本),仪式感细节 |
 | **进度留存** | 答题进度 sessionStorage 持久化,中途退出可回到已答位置;解锁状态 localStorage 永久有效 |
 
+## 微信内置浏览器防御
+
+买家大量从微信内置 webview 打开,它对部分网络请求/复制行为有静默限制。已移植姊妹项目 survival 的四层防御:
+
+1. **预警横幅**:检测到微信环境(`src/lib/wechat.ts` 的 UA 探测)时顶部显示提示条,告知"如遇打不开/复制失败,点右上角「···」选在浏览器打开";可手动关闭,本会话不再打扰(sessionStorage 记忆)
+2. **自动重试**:兑换码服务端验证首次请求被拦截时自动重试一次再走本地哈希兜底(`src/lib/codes.ts` → `verifyServer`)
+3. **解锁页引导**:微信环境下 Unlock 页 hint 区追加浏览器打开话术
+4. **发码话术**:`发码工具.html` 的交付模板第一条即提醒买家用浏览器打开,码不会失效
+
 ## 三步上手(本地开发)
 
 ```bash
@@ -98,7 +107,7 @@ git push                           # 备用线路: GitHub Pages(main 分支推�
 
 ## 数据埋点
 
-已接入 Vercel Analytics(主线路自动生效,Pages 线路静默忽略),自定义事件 `unlock_success`(区分 HY/CF 系列)。加上小红书店铺访客/订单数与笔记数据,即构成完整漏斗。
+已接入 Vercel Analytics(主线路自动生效,Pages 线路静默忽略),自定义事件 `unlock_success` / `unlock_fail`(区分 HY/CF 系列;fail 带原因维度,如码被其他设备占用)。加上小红书店铺访客/订单数与笔记数据,即构成完整漏斗。
 
 后续要加的事件:`quiz_start / quiz_finish / poster_save`(在 `Quiz.pick`、`PosterModal`、`CfFlow` 里用 `track()` 补),关键位置已留好。
 
