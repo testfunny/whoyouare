@@ -51,11 +51,11 @@ function Draw({ onPick }: { onPick: (i: number) => void }) {
             <div className="cf-name">{it.name}</div>
             <div className="cf-stash">开局 · {it.stashText}</div>
             <div className="cf-desc">{it.desc}</div>
-            <div className="cf-tease">⚠ 本剧本埋了 3 道陷阱题 · 别怪命运没提醒你</div>
+            <div className="cf-tease">⚠ 本剧本埋了 {it.seq.filter(qid => CF_QS[qid]?.opts.some(o => o.trap)).length} 道陷阱题 · 别怪命运没提醒你</div>
           </div>
           <div style={{ maxWidth: 320, margin: '18px auto 0' }}>
             <div className="actions">
-              <button className="btn primary" onClick={() => onPick(flipped)}>就这个身份，开测</button>
+              <button className="btn primary" onClick={() => { if (flipped != null) onPick(flipped) }}>就这个身份，开测</button>
               <button className="btn ghost" onClick={() => setFlipped(null)}>换一张</button>
             </div>
           </div>

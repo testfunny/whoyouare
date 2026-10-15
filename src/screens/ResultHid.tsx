@@ -36,6 +36,11 @@ export default function ResultHid({ params }: { params: URLSearchParams }) {
   const [poster, setPoster] = useState<string | null>(null)
   const [toast, setToast] = useState('')
   const [unlocked, setUnlockedState] = useState(isUnlocked())
+  /* 附录B · 口头禅命中互动：Hooks 必须在早退 return 之前声明，否则条件 Hooks 违规 */
+  const [mirrorHits, setMirrorHits] = useState<boolean[]>(() => {
+    const ok = !!d && d.length === HID_QS.length
+    return ok ? scoreHID(d).label.mirror.map(() => false) : []
+  })
 
   useEffect(() => {
     if (!d || d.length !== HID_QS.length) nav('/')
@@ -118,7 +123,6 @@ export default function ResultHid({ params }: { params: URLSearchParams }) {
     .filter((x): x is NonNullable<typeof x> => !!x)
 
   /* 附录B · 口头禅命中互动 */
-  const [mirrorHits, setMirrorHits] = useState<boolean[]>(() => L.mirror.map(() => false))
   const hitCount = mirrorHits.filter(Boolean).length
   const mirrorQuip = hitCount >= 3 ? '全中。这份档案就是为你立的案，本案审结。'
     : hitCount === 2 ? '命中率过半——档案可信，建议归档。'
@@ -296,7 +300,10 @@ export default function ResultHid({ params }: { params: URLSearchParams }) {
                 <button
                   key={i}
                   className={`mirror-row${mirrorHits[i] ? ' on' : ''}`}
-                  onClick={() => setMirrorHits(h => h.map((v, j) => (j === i ? !v : v)))}
+                  onClick={() => setMirrorHits(h => {
+                    const base = h.length === L.mirror.length ? h : L.mirror.map(() => false)
+                    return base.map((v, j) => (j === i ? !v : v))
+                  })}
                 >
                   <span className="mk">{mirrorHits[i] ? '✅' : '⬜'}</span>「{m}」
                 </button>
