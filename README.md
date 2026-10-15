@@ -107,9 +107,16 @@ git push                           # 备用线路: GitHub Pages(main 分支推�
 
 ## 数据埋点
 
-已接入 Vercel Analytics(主线路自动生效,Pages 线路静默忽略),自定义事件 `unlock_success` / `unlock_fail`(区分 HY/CF 系列;fail 带原因维度,如码被其他设备占用)。加上小红书店铺访客/订单数与笔记数据,即构成完整漏斗。
+已接入 Vercel Analytics(主线路自动生效,Pages 线路静默忽略),自定义事件(全部区分 HY/CF/ZH 系列):
 
-后续要加的事件:`quiz_start / quiz_finish / poster_save`(在 `Quiz.pick`、`PosterModal`、`CfFlow` 里用 `track()` 补),关键位置已留好。
+| 事件 | 触发口径 | 位置 |
+| --- | --- | --- |
+| `quiz_start` | 首题作答(zh/hid)/抽中身份开测(cf)——比进页面更接近意向信号,恢复作答不重复触发 | `Quiz.pick` / `CfFlow` onPick |
+| `quiz_finish` | 答完最后一题、进入生成动画 | `Quiz.finish` / `CfFlow` 完成分支 |
+| `poster_save` | 点击生成并打开海报(移动端长按保存无法在 web 端探测,打开即最强意向) | `PosterModal` 挂载 |
+| `unlock_success` / `unlock_fail` | 兑换码验证结果;fail 带原因维度(如码被其他设备占用) | `Unlock.submit` |
+
+加上小红书店铺访客/订单数与笔记数据,即构成完整漏斗。
 
 ## 第二期预留(架构已留位,未实现)
 

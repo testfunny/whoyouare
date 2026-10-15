@@ -370,7 +370,7 @@ export default function ResultHid({ params }: { params: URLSearchParams }) {
         <button className="btn ghost" onClick={() => nav('/quiz/hid')}>再测一次</button>
       </div>
 
-      {poster && <PosterModal url={poster} onClose={() => setPoster(null)} />}
+      {poster && <PosterModal url={poster} series={ 'hid' } onClose={() => setPoster(null)} />}
       {toast && <div className="toast">{toast}</div>}
     </>
   )

@@ -480,7 +480,7 @@ export default function ResultCf({ params }: { params: URLSearchParams }) {
         <button className="btn ghost" onClick={share}>邀请好友来穿越</button>
       </div>
 
-      {poster && <PosterModal url={poster} onClose={() => setPoster(null)} />}
+      {poster && <PosterModal url={poster} series={ 'cf' } onClose={() => setPoster(null)} />}
       {toast && <div className="toast">{toast}</div>}
     </>
   )

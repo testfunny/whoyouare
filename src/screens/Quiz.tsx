@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { track } from '@vercel/analytics'
 import { ZH_QS } from '../data/zh'
 import { HID_QS, HID_VIBES } from '../data/hid'
 import { enc, nav } from '../lib/share'
@@ -53,11 +54,16 @@ export default function Quiz({ testId, params }: { testId: TestId; params: URLSe
   const finish = (final: number[]) => {
     finalRef.current = final
     save(final)
+    try { track('quiz_finish', { series: testId }) } catch { /* ignore */ }
     setShowGen(true)
   }
 
   const pick = (oi: number) => {
     if (busy || sel !== null) return
+    if (answers.length === 0) {
+      // 首题作答即"真正开始"——比进入页面更接近漏斗的 intent 信号;恢复作答不会重复触发
+      try { track('quiz_start', { series: testId }) } catch { /* ignore */ }
+    }
     setSel(oi)
     buzz()
     setBusy(true)

@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { track } from '@vercel/analytics'
 import { CF_IDENTITIES, CF_QS, cfMoney, cfWorthLine, butlerSay } from '../data/cf'
 import { enc, nav } from '../lib/share'
 import { ProgressCells } from '../components/ui'
@@ -109,7 +110,12 @@ export default function CfFlow() {
   const qs = identity ? identity.seq.map(id => CF_QS[id]).filter(Boolean) : []
 
   if (!identity) {
-    return <Draw onPick={i => { try { sessionStorage.setItem('wy_cf_id', String(i)) } catch { /* ignore */ } setIdIdx(i); setStashVal(CF_IDENTITIES[i].stash) }} />
+    return <Draw onPick={i => {
+      // 抽中身份并开测 = CF 款的 quiz_start(与 zh/hid 的首题作答口径一致)
+      try { track('quiz_start', { series: 'cf' }) } catch { /* ignore */ }
+      try { sessionStorage.setItem('wy_cf_id', String(i)) } catch { /* ignore */ }
+      setIdIdx(i); setStashVal(CF_IDENTITIES[i].stash)
+    }} />
   }
 
   const q = qs[idx]
@@ -154,6 +160,7 @@ export default function CfFlow() {
         setIdx(i => i + 1)
       } else {
         finalRef.current = nextList
+        try { track('quiz_finish', { series: 'cf' }) } catch { /* ignore */ }
         setShowGen(true)
       }
     }, 650)

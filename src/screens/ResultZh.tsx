@@ -144,7 +144,7 @@ export default function ResultZh({ params }: { params: URLSearchParams }) {
         <button className="btn ghost" onClick={() => nav('/quiz/zh')}>再测一次</button>
       </div>
 
-      {poster && <PosterModal url={poster} onClose={() => setPoster(null)} />}
+      {poster && <PosterModal url={poster} series={ 'zh' } onClose={() => setPoster(null)} />}
       {toast && <div className="toast">{toast}</div>}
     </>
   )

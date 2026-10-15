@@ -1,7 +1,22 @@
 import { useEffect, useState } from 'react'
+import { track } from '@vercel/analytics'
 
-export default function PosterModal({ url, onClose }: { url: string; onClose: () => void }) {
+export default function PosterModal({
+  url,
+  onClose,
+  series,
+}: {
+  url: string
+  onClose: () => void
+  series?: string
+}) {
   const [tip, setTip] = useState('海报已生成')
+
+  useEffect(() => {
+    // poster_save 的口径是"用户点击生成并打开海报"——移动端长按保存动作
+    // 在 web 端无法探测,打开海报已是最强的保存意向信号
+    try { track('poster_save', { series: series ?? '' }) } catch { /* ignore */ }
+  }, [series])
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
