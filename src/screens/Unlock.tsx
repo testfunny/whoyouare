@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { checkCode, deviceId, setUnlocked, verifyServer, CodeSeries } from '../lib/codes'
+import { isWeChatBrowser } from '../lib/wechat'
 import { nav } from '../lib/share'
 import { track } from '@vercel/analytics'
 
@@ -24,6 +25,8 @@ export default function Unlock({ params }: { params: URLSearchParams }) {
   const [code, setCode] = useState('')
   const [err, setErr] = useState('')
   const [busy, setBusy] = useState(false)
+  // 微信内置浏览器对复制/部分请求有限制：提前给一句「去浏览器打开」的引导（层3）
+  const [inWeChat] = useState(() => isWeChatBrowser())
 
   const submit = async () => {
     if (busy) return
@@ -69,6 +72,7 @@ export default function Unlock({ params }: { params: URLSearchParams }) {
             获取方式：小红书店铺「whoyouare测试所」购买{copy.product}，
             收货后凭卡密在下方输入。一次解锁，长期有效，可解锁：
             {copy.perks.map((s, i) => <span key={i}><br />· {s}</span>)}
+            {inWeChat && <><br />微信内如遇解锁失败，请复制链接到浏览器打开</>}
           </div>
           <input
             className="code-input"

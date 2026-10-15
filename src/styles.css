@@ -54,6 +54,21 @@ p { line-height: 1.75; }
 }
 .topbar .back:active { background: var(--card2); }
 
+/* ---------- 微信环境预警横幅（四层防御 · 层1） ---------- */
+.wx-banner {
+  display: flex; align-items: flex-start; gap: 10px;
+  margin: 10px 0 0; padding: 9px 8px 9px 13px;
+  border: 1px solid rgba(255,209,102,.32); border-radius: 12px;
+  background: rgba(255,209,102,.07);
+  font-size: 12.5px; line-height: 1.7; color: #d9b96a;
+}
+.wx-banner-text { flex: 1; }
+.wx-banner-close {
+  flex: none; border: none; background: transparent; cursor: pointer;
+  color: var(--sub); font-size: 17px; line-height: 1.2; padding: 0 5px; font-family: inherit;
+}
+.wx-banner-close:active { color: var(--ink); }
+
 /* ---------- 首页 ---------- */
 .hero { padding: 26px 0 8px; }
 .hero .kicker {

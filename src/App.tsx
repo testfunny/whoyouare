@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Analytics } from '@vercel/analytics/react'
 import { parseHash } from './lib/share'
+import WeChatBanner from './components/WeChatBanner'
 import Home from './screens/Home'
 import Quiz from './screens/Quiz'
 import ResultZh from './screens/ResultZh'
@@ -43,6 +44,7 @@ export default function App() {
 
   return (
     <div className={`shell${theme ? ` theme-${theme}` : ''}`}>
+      <WeChatBanner />
       {body}
       <Analytics />
     </div>

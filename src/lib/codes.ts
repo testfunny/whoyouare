@@ -36,7 +36,8 @@ export async function checkCode(input: string, series: CodeSeries = 'hid'): Prom
 // ---------------------------------------------------------------------------
 // 服务端验证（Vercel Edge + Vercel KV）：一码一设备,防截图转发。
 // 三层回退保证"永不白屏"：服务端未配置(501)/码未注册(404,存量旧码)/网络失败
-// 全部回落本地哈希比对,行为与历史版本一致。
+// 全部回落本地哈希比对,行为与历史版本一致。网络失败时先自动重试一次再兜底
+// （微信 webview 首次请求易被拦截,见 verifyServer 内注释）。
 // ---------------------------------------------------------------------------
 
 export type ServerVerifyResult =
@@ -51,12 +52,23 @@ export async function verifyServer(
   series: CodeSeries,
   device: string
 ): Promise<ServerVerifyResult> {
-  try {
-    const res = await fetch(`${API_BASE}/api/verify`, {
+  const payload = JSON.stringify({ series, code: input, device })
+  const send = (): Promise<Response> =>
+    fetch(`${API_BASE}/api/verify`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ series, code: input, device })
+      body: payload
     })
+  try {
+    let res: Response
+    try {
+      res = await send()
+    } catch {
+      // 微信内置 webview 偶发静默拦截首次跨域请求（姊妹项目 survival 同类场景实测）：
+      // 等 1.2s 自动重发一次吸收偶发拦截；仍失败才落本地兜底（回退语义与原版一致）
+      await new Promise(resolve => setTimeout(resolve, 1200))
+      res = await send()
+    }
     if (res.status === 200) return { kind: 'ok' }
     if (res.status === 409) return { kind: 'used_other_device' }
     // 404=存量码未入服务端码池;501=服务端未配 KV;429/5xx=暂不可用 → 本地兜底
