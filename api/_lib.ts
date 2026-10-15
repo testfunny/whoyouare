@@ -1,0 +1,115 @@
+/**
+ * 兑换码服务端共享工具:归一化/哈希/CORS/限流/Upstash KV 访问。
+ *
+ * 供 api/verify.ts 与 api/admin-register.ts 使用;Edge 运行时,零 npm 依赖。
+ * 归一化与哈希口径必须与前端 src/lib/codes.ts、scripts/gen-codes.mjs 完全一致:
+ * 大写、剔除非字母数字(含横杠),SHA-256 十六进制。
+ */
+
+export type CodeSeries = 'hid' | 'cf'
+
+export const ALLOWED_ORIGINS = new Set([
+  'https://whoyouare-five.vercel.app',
+  'https://wjh941.github.io',
+  'http://localhost:5173',
+])
+
+export function corsHeaders(origin: string | null): Record<string, string> {
+  const h: Record<string, string> = {
+    'Access-Control-Allow-Headers': 'Content-Type, x-admin-key',
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Access-Control-Max-Age': '86400',
+    Vary: 'Origin',
+  }
+  if (origin && ALLOWED_ORIGINS.has(origin)) h['Access-Control-Allow-Origin'] = origin
+  return h
+}
+
+export function json(body: unknown, status: number, origin: string | null): Response {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { ...corsHeaders(origin), 'Content-Type': 'application/json; charset=utf-8' },
+  })
+}
+
+/** 与前端 normalizeCode 同口径:全角→半角、统一大写、剔除非字母数字 */
+export function normalizeCode(s: string): string {
+  let t = ''
+  for (const ch of s) {
+    const c = ch.codePointAt(0)!
+    if (c === 0x3000) { t += ' '; continue }
+    if (c >= 0xff01 && c <= 0xff5e) { t += String.fromCharCode(c - 0xfee0); continue }
+    t += ch
+  }
+  return t.toUpperCase().replace(/[^A-Z0-9]/g, '')
+}
+
+export async function sha256Hex(text: string): Promise<string> {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text))
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('')
+}
+
+/** 常量时间字符串比较(校验 ADMIN_KEY 用;Edge 运行时无 node:crypto.timingSafeEqual) */
+export function safeEqual(a: string, b: string): boolean {
+  if (a.length !== b.length) return false
+  let diff = 0
+  for (let i = 0; i < a.length; i++) diff |= a.charCodeAt(i) ^ b.charCodeAt(i)
+  return diff === 0
+}
+
+// ---------------------------------------------------------------------------
+// Upstash Redis(REST):Vercel KV 市场插件会自动注入 KV_REST_API_URL/TOKEN。
+// 未配置时服务端验证自动降级,前端回落本地哈希比对。
+// ---------------------------------------------------------------------------
+
+const KV_URL = (process.env.KV_REST_API_URL || '').trim().replace(/\/$/, '')
+const KV_TOKEN = (process.env.KV_REST_API_TOKEN || '').trim()
+
+export function kvConfigured(): boolean {
+  return KV_URL !== '' && KV_TOKEN !== ''
+}
+
+/** 执行一条 Redis 命令(POST JSON 数组形式,避免 URL 转义问题);失败返回 null */
+export async function kv(...args: (string | number)[]): Promise<string | null> {
+  if (!kvConfigured()) return null
+  try {
+    const res = await fetch(KV_URL, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${KV_TOKEN}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(args),
+    })
+    if (!res.ok) return null
+    const data = (await res.json()) as { result?: string | null }
+    return data.result ?? null
+  } catch {
+    return null
+  }
+}
+
+export const poolKey = (series: CodeSeries, hash: string) => `pool:${series}:${hash}`
+export const actKey = (series: CodeSeries, hash: string) => `act:${series}:${hash}`
+
+// ---------------------------------------------------------------------------
+// 限流:Edge 实例内存计数,尽力而为(冷启动清零、多实例不共享),与 fanqing-plan 同款取舍
+// ---------------------------------------------------------------------------
+
+const hits = new Map<string, { n: number; reset: number }>()
+
+export function overLimit(ip: string, limit = 30, windowMs = 60_000): boolean {
+  const now = Date.now()
+  const slot = hits.get(ip)
+  if (!slot || slot.reset < now) {
+    hits.set(ip, { n: 1, reset: now + windowMs })
+    return false
+  }
+  slot.n += 1
+  if (hits.size > 5_000) hits.clear() // 粗暴防膨胀,低流量场景足够
+  return slot.n > limit
+}
+
+export function clientIp(req: Request): string {
+  return (req.headers.get('x-forwarded-for') || 'unknown').split(',')[0].trim()
+}

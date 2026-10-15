@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { checkCode, setUnlocked, CodeSeries } from '../lib/codes'
+import { checkCode, deviceId, setUnlocked, verifyServer, CodeSeries } from '../lib/codes'
 import { nav } from '../lib/share'
 import { track } from '@vercel/analytics'
 
@@ -29,7 +29,15 @@ export default function Unlock({ params }: { params: URLSearchParams }) {
     if (busy) return
     setBusy(true)
     setErr('')
-    const ok = await checkCode(code, series)
+    // 服务端验证优先:一码一设备,防截图转发;本地哈希比对作兜底(存量码/服务未配/断网)
+    const server = await verifyServer(code, series, deviceId())
+    if (server.kind === 'used_other_device') {
+      setBusy(false)
+      try { track('unlock_fail', { series, reason: 'used_other_device' }) } catch { /* ignore */ }
+      setErr('该兑换码已在其他设备使用。一码仅限一台设备，如非本人操作请联系店铺客服')
+      return
+    }
+    const ok = server.kind === 'ok' || (await checkCode(code, series))
     setBusy(false)
     if (ok) {
       setUnlocked(series)

@@ -33,6 +33,55 @@ export async function checkCode(input: string, series: CodeSeries = 'hid'): Prom
   return SERIES[series].hashes.includes(h)
 }
 
+// ---------------------------------------------------------------------------
+// 服务端验证（Vercel Edge + Vercel KV）：一码一设备,防截图转发。
+// 三层回退保证"永不白屏"：服务端未配置(501)/码未注册(404,存量旧码)/网络失败
+// 全部回落本地哈希比对,行为与历史版本一致。
+// ---------------------------------------------------------------------------
+
+export type ServerVerifyResult =
+  | { kind: 'ok' }
+  | { kind: 'used_other_device' }
+  | { kind: 'fallback' }
+
+const API_BASE = ((import.meta.env.VITE_VERIFY_API_BASE as string | undefined) || '').replace(/\/$/, '')
+
+export async function verifyServer(
+  input: string,
+  series: CodeSeries,
+  device: string
+): Promise<ServerVerifyResult> {
+  try {
+    const res = await fetch(`${API_BASE}/api/verify`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ series, code: input, device })
+    })
+    if (res.status === 200) return { kind: 'ok' }
+    if (res.status === 409) return { kind: 'used_other_device' }
+    // 404=存量码未入服务端码池;501=服务端未配 KV;429/5xx=暂不可用 → 本地兜底
+    return { kind: 'fallback' }
+  } catch {
+    return { kind: 'fallback' }
+  }
+}
+
+/** 轻量设备标识:首访生成并持久化,用于服务端"一码一设备"绑定 */
+export function deviceId(): string {
+  try {
+    let id = localStorage.getItem('wy_device')
+    if (!id) {
+      id = typeof crypto.randomUUID === 'function'
+        ? crypto.randomUUID()
+        : `d${Date.now().toString(36)}${Math.random().toString(36).slice(2, 10)}`
+      localStorage.setItem('wy_device', id)
+    }
+    return id
+  } catch {
+    return 'anon'
+  }
+}
+
 export function isUnlocked(series: CodeSeries = 'hid'): boolean {
   try { return localStorage.getItem(SERIES[series].key) === '1' } catch { return false }
 }
